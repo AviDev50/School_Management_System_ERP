@@ -1,54 +1,121 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import db from "../../config/db.js"; 
+import {
+  createSchool,
+  findUserByEmail,
+  createUser,
+  getActiveUserByEmail,
+  getSchoolById
+} from "./user.model.js";
 
+export async function registerSchoolWithAdmin(data) {
+  const {
+    school_name,
+    email,
+    phone,
+    address,
+    admin_name,
+    admin_email,
+    password,
+  } = data;
 
-export const registerSchoolWithAdmin = async (data) => {
-  const { school_name, email, phone, address, admin_name, admin_email, password } = data;
+  const existingUser = await findUserByEmail(admin_email);
+  if (existingUser) {
+    return {
+      success: false,
+      message: "Email already exists",
+      data: [],
+    };
+  }
 
-  const [existing] = await db.query(
-    "SELECT user_id FROM users WHERE email = ?",
-    [admin_email]
-  );
-  if (existing.length) throw new Error("Email already exists");
-
-  const [schoolResult] = await db.query(
-    "INSERT INTO schools (school_name, email, phone, address) VALUES (?,?,?,?)",
-    [school_name, email, phone, address]
-  );
+  const school_id = await createSchool({
+    school_name,
+    email,
+    phone,
+    address,
+  });
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await db.query(
-    `INSERT INTO users (school_id, name, email, password, role)
-     VALUES (?,?,?,?,?)`,
-    [schoolResult.insertId, admin_name, admin_email, hashedPassword, "school_admin"]
-  );
+  const user_id = await createUser({
+    school_id,
+    name: admin_name,
+    email: admin_email,
+    password: hashedPassword,
+    role: "school_admin",
+  });
 
-  return { message: "School & Admin registered successfully" };
-};
+  return {
+    success: true,
+    message: "School & Admin registered successfully",
+    data: [
+      {
+        school_id,
+        user_id,
+        admin_name,
+        admin_email,
+      },
+    ],
+  };
+}
 
-export const loginUser = async (email, password) => {
-  const [users] = await db.query(
-    "SELECT * FROM users WHERE email = ? AND status = 1",
-    [email]
-  );
+export async function loginUser(email, password) {
+  const user = await getActiveUserByEmail(email);
 
-  if (!users.length) throw new Error("Invalid credentials");
+  if (!user) {
+    return {
+      success: false,
+      message: "Invalid credentials",
+      data: [],
+    };
+  }
 
-  const user = users[0];
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) throw new Error("Invalid credentials");
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return {
+      success: false,
+      message: "Invalid credentials",
+      data: [],
+    };
+  }
 
   const token = jwt.sign(
     {
       user_id: user.user_id,
       school_id: user.school_id,
-      role: user.role
+      role: user.role,
     },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
 
-  return { token };
-};
+  return {
+    success: true,
+    message: "Login successful",
+    data: [
+      {
+        user_id: user.user_id,
+        role: user.role,
+        token,
+      },
+    ],
+  };
+}
+
+export async function getSchool(id) {
+  const school = await getSchoolById(id)
+
+  if (!school) {
+    return {
+      success: false,
+      message: "School not found",
+      data: null,
+    };
+  }
+
+  return {
+    success: true,
+    message: "School fetched successfully",
+    data: school,
+  };
+}
