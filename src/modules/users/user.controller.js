@@ -232,3 +232,72 @@ export async function addStudent(req, res) {
   }
 }
 
+export async function deleteStudent(req,res) {
+  try{
+  const{student_id} = req.body
+
+   if (!student_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
+    }
+  
+    const student = await UserModel.deleteStudent({student_id})
+
+        if (student[0].affected_rows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+        data: []
+      });
+    }
+
+     return res.status(201).json({
+      success: true,
+      message: "Student deleted successfully",
+      data: student
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      data:[]
+    });
+  }
+}
+
+export async function getStudentDetailsById(req, res) {
+  try {
+    const {student_id} = req.params;
+
+    if (!student_id) {
+      return res.status(400).json({
+        success: false,
+        message: "student_id is required",
+      });
+    }
+
+    const student = await UserModel.getStudentById(student_id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "School not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: student,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+}
