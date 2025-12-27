@@ -80,7 +80,7 @@ export async function login(req, res) {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch =await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(401).json({
@@ -141,3 +141,94 @@ export async function getSchoolDetailsById(req, res) {
     });
   }
 }
+
+export async function getAllSchoolDetails(req,res) {
+  try {
+    const school = await UserModel.getAllSchool()
+
+    return res.status(200).json({
+      success: true,
+      message: "All School details get successfully",
+      data: school
+    })
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+    
+  }
+}
+
+export async function getAllStudentDetails(req,res) {
+  try {
+    const students = await UserModel.getStudents()
+
+    return res.status(200).json({
+      success: true,
+      message: "All Students details get successfully",
+      data: students
+    })
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success:false,
+      message:"Server error"
+    })
+  
+  }
+}
+
+export async function addStudent(req, res) {
+  try {
+    const {
+      school_id,
+      user_id,
+      admission_no,
+      gender,
+      class_id,
+      section_id
+    } = req.body;
+
+    if (
+      !school_id ||
+      !user_id ||
+      !admission_no ||
+      !gender 
+     // !class_id ||
+     // !section_id
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Required fields missing",
+      });
+    }
+
+    const student = await UserModel.createStudent({
+      school_id,
+      user_id,
+      admission_no,
+      gender,
+      class_id,
+      section_id
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Student created successfully",
+      data: student
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      data:[]
+    });
+  }
+}
+
