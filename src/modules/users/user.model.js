@@ -40,3 +40,47 @@ export async function getSchoolById(id) {
 
   return rows[0] || null;
 }
+
+export async function getAllSchool() {
+  const[rows] = await db.query(
+    "select * from schools"
+  )
+  return rows
+}
+
+export async function getStudents() {
+   const[rows] = await db.query(
+    "select * from students"
+  )
+  return rows
+}
+
+export async function createStudent(data) {
+  const {
+    school_id,
+    user_id,
+    admission_no,
+    gender,
+    class_id,
+    section_id
+  } = data;
+
+  const [result] = await db.query(
+    `INSERT INTO students 
+     (school_id, user_id, admission_no, gender, class_id, section_id)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [school_id, user_id, admission_no, gender, class_id, section_id]
+  );
+
+   return [
+    {
+      student_id: result.insertId,
+      school_id,
+      user_id,
+      admission_no,
+      gender,
+      class_id,
+      section_id
+    }
+  ];
+}
