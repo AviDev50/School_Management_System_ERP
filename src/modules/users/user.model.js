@@ -84,3 +84,25 @@ export async function createStudent(data) {
     }
   ];
 }
+
+export async function deleteStudent(data) {
+  const { student_id } = data;
+
+  const [result] = await db.query(
+    "DELETE FROM students WHERE student_id = ?",
+    [student_id]
+  );
+
+  return [{
+    affected_rows: result.affectedRows
+  }];
+}
+
+export async function getStudentById(student_id) {
+  const [rows] = await db.query(
+    "SELECT * FROM students WHERE student_id = ?",
+    [student_id]
+  );
+
+  return rows[0] || null;
+}

@@ -5,7 +5,9 @@ import {
   getSchoolDetailsById,
   getAllSchoolDetails,
   getAllStudentDetails,
-  addStudent
+  addStudent,
+  deleteStudent,
+  getStudentDetailsById
 } from "./user.controller.js";
 import { verifyToken } from "../../middlewares/auth.middleware.js";
 
@@ -18,6 +20,8 @@ router.get("/getSchoolDetailsById/:id",getSchoolDetailsById);
 router.get("/getAllSchoolDetails",getAllSchoolDetails);
 router.get("/getAllStudentDetails",getAllStudentDetails);
 router.post("/addStudent",addStudent);
+router.delete("/deleteStudent",deleteStudent);
+router.get("/getStudentDetailsById/:student_id",getStudentDetailsById);
 
 
 export default router
