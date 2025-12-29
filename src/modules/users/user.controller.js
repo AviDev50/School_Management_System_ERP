@@ -2,26 +2,28 @@ import * as UserModel from "./user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-export async function registerUser(req, res) {
+export async function registerSchoolAdminWithSchool(req, res) {
   try {
     const {
+      school_id,
+      name,
+      user_email,
+      password,
+      role,
       school_name,
       email,
       phone,
-      address,
-      admin_name,
-      admin_email,
-      password,
+      address
     } = req.body;
 
-    if (!admin_email || !password || !school_name) {
+    if (!user_email || !password || !school_name) {
       return res.status(400).json({
         success: false,
         message: "Required fields missing",
       });
     }
 
-    const existingUser = await UserModel.findUserByEmail(admin_email);
+    const existingUser = await UserModel.findUserByEmail(user_email);
 
     if (existingUser) {
       return res.status(400).json({
@@ -40,11 +42,11 @@ export async function registerUser(req, res) {
     });
 
     await UserModel.createUser({
-      name: admin_name,
-      email: admin_email,
+      school_id:schoolId,
+      name,
+      user_email,
       password: hashedPassword,
-      role: "school_admin",
-      school_id: schoolId,
+      role
     });
 
     return res.status(201).json({
@@ -90,7 +92,7 @@ export async function login(req, res) {
     }
 
     const token = jwt.sign(
-      { userId: user.user_id, role: user.role },
+      { userId: user.user_id,school_id:user.school_id,role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -100,6 +102,7 @@ export async function login(req, res) {
       message: "Login successful",
       token,
     });
+
   } catch (err) {
     console.error(err);
     return res.status(500).json({
@@ -111,16 +114,16 @@ export async function login(req, res) {
 
 export async function getSchoolDetailsById(req, res) {
   try {
-    const { id } = req.params;
+    const { school_id } = req.params;
 
-    if (!id) {
+    if (!school_id) {
       return res.status(400).json({
         success: false,
         message: "School ID is required",
       });
     }
 
-    const school = await UserModel.getSchoolById(id);
+    const school = await UserModel.getSchoolById(school_id);
 
     if (!school) {
       return res.status(404).json({
@@ -185,31 +188,29 @@ export async function getAllStudentDetails(req,res) {
 export async function addStudent(req, res) {
   try {
     const {
-      school_id,
-      user_id,
       admission_no,
       gender,
       class_id,
-      section_id
+      section_id,
+      name,
+      user_email,
+      password
     } = req.body;
 
-    if (
-      !school_id ||
-      !user_id ||
-      !admission_no ||
-      !gender 
-     // !class_id ||
-     // !section_id
-    ) {
+   const school_id = req.user.school_id; // token se nahi then we use
+
+    if (!name || !admission_no || !gender || !password) {
       return res.status(400).json({
         success: false,
-        message: "Required fields missing",
+        message: "name, admission_no, gender and password are required",
       });
     }
 
-    const student = await UserModel.createStudent({
+    const result = await UserModel.createStudentWithUser({
       school_id,
-      user_id,
+      name,
+      user_email,
+      password,
       admission_no,
       gender,
       class_id,
@@ -219,18 +220,26 @@ export async function addStudent(req, res) {
     return res.status(201).json({
       success: true,
       message: "Student created successfully",
-      data: student
+      data: result
     });
 
   } catch (error) {
     console.error(error);
+
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({
+        success: false,
+        message: "Admission number or email already exists",
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: "Server error",
-      data:[]
     });
   }
 }
+
 
 export async function deleteStudent(req,res) {
   try{

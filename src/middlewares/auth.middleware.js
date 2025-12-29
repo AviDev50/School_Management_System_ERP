@@ -33,6 +33,17 @@ export function verifyToken(req, res, next) {
   }
 }
 
+//when we want that only admin can add student
+// export const isAdmin = (req, res, next) => {
+//   if (req.user.role !== "admin") {
+//     return res.status(403).json({
+//       success: false,
+//       message: "Only admin can add students",
+//     });
+//   }
+//   next();
+// };
+
 // export function allowRoles(...roles) {
 //   return (req, res, next) => {
 //     if (!req.user || !roles.includes(req.user.role)) {
