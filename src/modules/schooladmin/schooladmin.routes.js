@@ -1,18 +1,18 @@
 import express from "express";
 import {
-  registerSchoolAdminWithSchool,
-  login,
-  getSchoolDetailsById,
-  getAllSchoolDetails
+  registerTeacher,
+  registerStudent,
+  registerAccountant,
 } from "./schooladmin.controller.js";
-import { verifyToken } from "../../middlewares/auth.middleware.js";
+import { verifyToken} from "../../middlewares/auth.middleware.js";
+import { allowRoles } from "../../middlewares/role.middleware.js";
+
 
 const router = express.Router();
 
-router.post("/registerSchoolAdminWithSchool",registerSchoolAdminWithSchool);//adding school user here
-router.post("/login", login);
-// router.get("/getSchoolDetailsById/:id", verifyToken,allowRoles, getSchoolDetailsById);
-router.get("/getSchoolDetailsById/:school_id",getSchoolDetailsById);
-router.get("/getAllSchoolDetails",getAllSchoolDetails);
+// Only SCHOOL_ADMIN can create these users
+router.post("/registerTeacher-",allowRoles("SCHOOL_ADMIN"), registerTeacher);
+router.post("/registerTeacher", allowRoles("SCHOOL_ADMIN"), registerStudent);
+router.post("/registerTeacher", allowRoles("SCHOOL_ADMIN"), registerAccountant);
 
-export default router
+export default router;

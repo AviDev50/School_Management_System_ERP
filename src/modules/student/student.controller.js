@@ -1,4 +1,3 @@
-import * as studentModel from "./student.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -177,22 +176,16 @@ export async function getStudentDetailsById(req, res) {
   }
 }
 
-export async function getAllStudentDetails(req,res) {
+export async function getAllStudentDetails(req, res) {
   try {
-    const students = await schoolAdminModel.getStudents()
+    const students = await schoolAdminService.getStudentsDetails();
 
     return res.status(200).json({
       success: true,
-      message: "All Students details get successfully",
+      message: "All Students details fetched successfully",
       data: students
-    })
-    
+    });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      success:false,
-      message:"Server error"
-    })
-  
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 }
