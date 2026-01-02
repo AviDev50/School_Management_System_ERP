@@ -6,7 +6,7 @@ import {
   getStudentDetailsById,
   login
 } from "./student.controller.js";
-import { verifyToken } from "../../middlewares/auth.middleware.js";
+import { verifyToken } from "../authorization/authorization.controller.js";
 
 const router = express.Router();
 

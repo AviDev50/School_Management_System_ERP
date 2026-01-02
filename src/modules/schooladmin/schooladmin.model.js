@@ -55,5 +55,54 @@ export async function createAccountant(
   return result.insertId;
 }
 
+/**
+ * Here we Get students list with pagination
+ */
+export async function getStudentsList({ school_id, limit, offset }) {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(
+      `
+      SELECT 
+        user_id,
+        name,
+        email,
+        status,
+        created_at
+      FROM users
+      WHERE school_id = ?
+        AND role = 'student'
+        AND status = 1
+      ORDER BY user_id DESC
+      LIMIT ? OFFSET ?
+      `,
+      [school_id, limit, offset]
+    );
+
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getTotalStudentsCount(school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [[result]] = await connection.query(
+      `
+      SELECT COUNT(*) AS total
+      FROM users
+      WHERE school_id = ?
+        AND role = 'student'
+        AND status = 1
+      `,
+      [school_id]
+    );
+
+    return result.total;
+  } finally {
+    connection.release();
+  }
+}
 
 

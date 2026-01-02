@@ -15,6 +15,7 @@ async function registerUser(
     user_email,
     connection
   );
+  
   if (existing) throw new Error("Email already exists");
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -147,5 +148,46 @@ export async function registerAccountantService(data) {
     throw err;
   } finally {
     connection.release();
+  }
+}
+
+export async function getTotalStudentsListService(data) {
+  try {
+    const { school_id, page = 1, limit = 10 } = data;
+
+    if (!school_id) {
+      return {
+        success: false,
+        message: "School ID is required",
+      };
+    }
+
+    const offset = (page - 1) * limit;
+
+    const result = await schoolAdminModel.getStudentsList({
+      school_id,
+      limit: Number(limit),
+      offset,
+    });
+
+    const totalCount = await schoolAdminModel.getTotalStudentsCount(school_id);
+
+    return {
+      success: true,
+      message: "Students list fetched successfully",
+      data: result,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
+  } catch (error) {
+    console.error("Service Error:", error);
+    return {
+      success: false,
+      message: "Something went wrong while fetching students",
+    };
   }
 }
