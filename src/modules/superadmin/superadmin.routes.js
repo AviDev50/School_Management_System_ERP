@@ -32,8 +32,7 @@
 // export default router;
 import express from "express";
 import { createSchoolWithAdmin} from "./superadmin.controller.js";
-import { verifyToken} from "../../middlewares/auth.middleware.js";
-import { allowRoles } from "../../middlewares/role.middleware.js";
+import { verifyToken} from "../authorization/authorization.controller.js";
 
 const router = express.Router();
 

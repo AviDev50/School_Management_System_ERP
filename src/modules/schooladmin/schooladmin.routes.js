@@ -3,19 +3,23 @@ import {
   registerTeacher,
   registerStudent,
   registerAccountant,
+  getTotalStudentsList
 } from "./schooladmin.controller.js";
-import { verifyToken} from "../../middlewares/auth.middleware.js";
-import { allowRoles } from "../../middlewares/role.middleware.js";
+import {authMiddleware} from "../../middlewares/auth.middleware.js";
+
 
 
 const router = express.Router();
 
-// // Only SCHOOL_ADMIN can create these users
+// // Only SCHOOL_ADMIN can create these users 
 // router.post("/registerTeacher-",allowRoles("SCHOOL_ADMIN"), registerTeacher);
 // router.post("/registerTeacher", allowRoles("SCHOOL_ADMIN"), registerStudent);
 // router.post("/registerTeacher", allowRoles("SCHOOL_ADMIN"), registerAccountant);
 router.post("/registerTeacher",registerTeacher);
 router.post("/registerStudent",registerStudent);
 router.post("/registerAccountant",registerAccountant);
+router.post("/getTotalStudentsList",getTotalStudentsList);
+
+
 
 export default router;
