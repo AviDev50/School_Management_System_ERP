@@ -191,3 +191,36 @@ export async function getTotalStudentsListService(data) {
     };
   }
 }
+
+export async function getTotalTeachersListService(data) {
+  try{
+  const {school_id,page = 1, limit = 10} = data
+
+  const offset = (page-1) * limit
+
+  const result = await schoolAdminModel.getTeachersList({
+    school_id,
+    limit:Number(limit),
+    offset
+  })
+
+   const totalCount = await schoolAdminModel.getTotalTeachersCount(school_id);
+ return {
+      success: true,
+      message: "Teachers list fetched successfully",
+      data: result,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
+  } catch (error) {
+    console.error("Service Error:", error);
+    return {
+      success: false,
+      message: "Something went wrong while fetching students",
+    };
+  }
+}

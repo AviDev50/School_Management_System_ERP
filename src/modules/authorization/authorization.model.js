@@ -59,7 +59,7 @@ export async function updateLastLogin(userId, connection = null) {
       [userId]
     );
   } finally {
-    if (!connection) conn.release();w
+    if (!connection) conn.release();
   }
 }
 

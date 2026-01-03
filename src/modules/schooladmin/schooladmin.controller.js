@@ -28,11 +28,19 @@ export async function registerAccountant(req, res) {
   }
 }
 
-export async function getTotalStudentsList(req,res) {
+export async function getTotalStudentsListBySchoolId(req,res) {
   try {
     const result = await schoolAdminService.getTotalStudentsListService(req.body);
-    return res.status(201).json({success: true, message: "All Students list get successfully"})
+    return res.status(201).json({success: true, message: "All Students list get successfully",data:[result]})
   } catch (error) {
     return res.status(400).json({ success: false, message: error.message });
   }
+}
+
+export async function getTotalTeachersListBySchoolId(req,res) {
+  try{const result = await schoolAdminService.getTotalTeachersListService(req.body);
+  return res.status(201).json({success:true,message:"All teachers details get successfully",data:[result]})
+} catch(error){
+  return res.status(400).json({success: false, message: error.message});
+}
 }

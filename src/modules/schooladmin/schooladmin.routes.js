@@ -3,9 +3,9 @@ import {
   registerTeacher,
   registerStudent,
   registerAccountant,
-  getTotalStudentsList
+  getTotalStudentsListBySchoolId,
+  getTotalTeachersListBySchoolId
 } from "./schooladmin.controller.js";
-import {authMiddleware} from "../../middlewares/auth.middleware.js";
 
 
 
@@ -18,7 +18,10 @@ const router = express.Router();
 router.post("/registerTeacher",registerTeacher);
 router.post("/registerStudent",registerStudent);
 router.post("/registerAccountant",registerAccountant);
-router.post("/getTotalStudentsList",getTotalStudentsList);
+router.post("/getTotalStudentsListBySchoolId",getTotalStudentsListBySchoolId);
+router.post("/getTotalTeachersListBySchoolId",getTotalTeachersListBySchoolId);
+router.post("/getTotalTeachersListBySchoolId",getTotalTeachersListBySchoolId);
+
 
 
 
