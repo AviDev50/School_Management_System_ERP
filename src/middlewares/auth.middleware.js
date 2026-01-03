@@ -1,7 +1,7 @@
 // middlewares/auth.middleware.js
 import jwt from 'jsonwebtoken';
 
-// Middleware - protects routes
+// Middleware - for protects routes
 export function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
@@ -78,7 +78,7 @@ export function checkRole(allowedRoles) {
   };
 }
 
-
+//Here detailed description
 // # Authentication (Public)
 // POST   /api/auth/login
 // POST   /api/auth/super-admin/login

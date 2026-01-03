@@ -134,7 +134,7 @@ export async function verifyToken(req, res) {
   try {
     const authHeader = req.headers.authorization;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Bearer')) {
       return res.status(401).json({
         success: false,
         message: "No token provided"

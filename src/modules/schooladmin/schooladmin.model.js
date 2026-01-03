@@ -64,18 +64,23 @@ export async function getStudentsList({ school_id, limit, offset }) {
     const [rows] = await connection.query(
       `
       SELECT 
-        user_id,
-        name,
-        email,
-        status,
-        created_at
-      FROM users
-      WHERE school_id = ?
-        AND role = 'student'
-        AND status = 1
-      ORDER BY user_id DESC
-      LIMIT ? OFFSET ?
-      `,
+        u.user_id,
+        u.name,
+        u.user_email,
+        u.status,
+        s.school_id,
+        s.admission_no,
+        s.gender,
+        s.class_id,
+        s.section_id,
+        s.student_id
+      FROM users u
+      JOIN students s on s.user_id = u.user_id
+      WHERE u.school_id = ?
+        AND u.role = 'student'
+        AND u.status = 1
+      ORDER BY u.user_id DESC
+      LIMIT ? OFFSET ?`,
       [school_id, limit, offset]
     );
 
@@ -105,4 +110,54 @@ export async function getTotalStudentsCount(school_id) {
   }
 }
 
+export async function getTeachersList({ school_id, limit, offset }) {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(
+      `
+      SELECT 
+        u.user_id,
+        u.name,
+        u.user_email,
+        u.status,
+        t.school_id,
+        t.teacher_id,
+        t.qualification,
+        t.experience_years,
+        t.joining_date,
+        t.status
+      FROM users u
+      JOIN teachers t on t.user_id = u.user_id
+      WHERE u.school_id = ?
+        AND u.role = 'teacher'
+        AND u.status = 1
+      ORDER BY u.user_id DESC
+      LIMIT ? OFFSET ?`,
+      [school_id, limit, offset]
+    );
 
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getTotalTeachersCount(school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [[result]] = await connection.query(
+      `
+      SELECT COUNT(*) AS total
+      FROM users
+      WHERE school_id = ?
+        AND role = 'teacher'
+        AND status = 1
+      `,
+      [school_id]
+    );
+
+    return result.total;
+  } finally {
+    connection.release();
+  }
+}
