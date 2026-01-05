@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import * as authModel from './authorization.model.js';
+import db from "../../config/db.js";
 
 // User Login Service
 export async function loginService(user_email, password) {

@@ -13,10 +13,10 @@ router.post('/login',authController.login);
 // Protected routes (authentication required)
 // Token + Role check needed
 router.get('/me', authMiddleware, authController.getCurrentUser);
-//             ↑ Token verify karta hai
+//Here authmiddleware Token verify karta hai
 
 //router.get('/dashboard', authMiddleware, checkRole(['school_admin']), getDashboard);
-//                      ↑ Token verify    ↑ Role check
+// here Token verify then Role check
 
 
 export default router;

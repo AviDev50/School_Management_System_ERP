@@ -1,5 +1,8 @@
-import * as studentModel from "./student.model.js";
 import db from "../../config/db.js";
+// modules/student/student.service.js
+import bcrypt from 'bcrypt';
+import * as studentModel from './student.model.js';
+
 
 
 export async function getStudentByIdService(data) {
@@ -19,34 +22,20 @@ export async function getStudentByIdService(data) {
   }
 }
 
-export async function upsertStudentService(data) {
-  const connection = await db.getConnection();
-   
-  try {
-    await connection.beginTransaction();
 
-    if (data.name || data.email) {
-      await studentModel.updateUser(connection, {
-        user_id: data.user_id,
-        name: data.name,
-        email: data.user_email
-      });
-    }
+export async function updateStudentService(student_id, school_id, data) {
 
-    await studentModel.upsertStudent(connection, {
-      user_id: data.user_id,
-      admission_no: data.admission_no,
-      class_id: data.class_id,
-      section_id: data.section_id
-    });
+  // delete data.student_id;
 
-    await connection.commit();
-    return { user_id: data.user_id };
+  const affectedRows = await studentModel.updateStudent(
+    student_id,
+    school_id,
+    data
+  );
 
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
+  if (affectedRows === 0) {
+    throw new Error("Student not found");
   }
+
+  return true;
 }
