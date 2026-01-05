@@ -6,6 +6,7 @@ export function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
     
+    //here i add bearer token validation
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
@@ -14,8 +15,10 @@ export function authMiddleware(req, res, next) {
     }
 
     const token = authHeader.split(' ')[1];
+    //here we verify jwt and decode 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    //here we set req.user
     req.user = {
       user_id: decoded.user_id,
       school_id: decoded.school_id,
@@ -57,52 +60,23 @@ export function authMiddleware(req, res, next) {
   }
 }
 
-// Role check middleware
+// Role check middleware, we paas role at the time of route
 export function checkRole(allowedRoles) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized"
+        message: "Unauthorized not allowed"
       });
     }
 
     if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: "Access denied. Insufficient permissions."
+        message: "Access denied. Insufficient permissions to user."
       });
     }
 
     next(); //if role matches then allow access
   };
 }
-
-//Here detailed description
-// # Authentication (Public)
-// POST   /api/auth/login
-// POST   /api/auth/super-admin/login
-// POST   /api/auth/logout
-// POST   /api/auth/verify-token
-// GET    /api/auth/me
-
-// # School Admin (Protected - school_admin only)
-// GET    /api/schooladmin/dashboard
-// POST   /api/schooladmin/teachers
-// GET    /api/schooladmin/students
-
-// # Super Admin (Protected - super_admin only)
-// GET    /api/superadmin/schools
-// POST   /api/superadmin/schools
-
-// # Teacher (Protected - teacher + school_admin)
-// GET    /api/teacher/classes
-// POST   /api/teacher/attendance
-
-// # Student (Protected - student + teacher + school_admin)
-// GET    /api/student/timetable
-// GET    /api/student/attendance
-
-// # Accountant (Protected - accountant + school_admin)
-// GET    /api/accountant/fees
-// POST   /api/accountant/payments

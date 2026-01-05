@@ -1,12 +1,21 @@
 import express from "express";
 import {
   getStudentDetailsById,
-  upsertStudentById
+  updateStudent
 } from "./student.controller.js";
-
+import { authMiddleware, checkRole } from '../../middlewares/auth.middleware.js';
 const router = express.Router();
 
 router.get("/getStudentDetailsById/:student_id",getStudentDetailsById)
-router.post("/upsertStudentById",upsertStudentById)
+
+
+router.put(
+  '/updateStudent',
+  authMiddleware,
+  checkRole(['school_admin']),
+  updateStudent
+);
+
+
 
 export default router;
