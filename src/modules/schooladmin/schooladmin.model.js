@@ -161,3 +161,146 @@ export async function getTotalTeachersCount(school_id) {
     connection.release();
   }
 }
+
+export async function createClass(school_id, data) {
+  const connection = await db.getConnection();
+  try {
+    const { class_name, class_order, class_details, status } = data;
+
+    const [result] = await connection.query(
+      `INSERT INTO classes 
+       (school_id, class_name, class_order, class_details, status)
+       VALUES (?, ?, ?, ?, ?)`,
+      [school_id, class_name, class_order, class_details || null, status ?? 1]
+    );
+
+    return { class_id: result.insertId };
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateClass(class_id, school_id, data) {
+  const connection = await db.getConnection();
+  try {
+    const { class_name, class_order, class_details, status } = data;
+
+    const [result] = await connection.query(
+      `UPDATE classes 
+       SET class_name = ?, 
+           class_order = ?, 
+           class_details = ?, 
+           status = ?
+       WHERE class_id = ? AND school_id = ?`,
+      [
+        class_name,
+        class_order,
+        class_details || null,
+        status,
+        class_id,
+        school_id,
+      ]
+    );
+
+    return result.affectedRows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getAllClasses(school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(
+      `SELECT 
+         class_id,
+         class_name,
+         class_order,
+         class_details,
+         status,
+         created_at
+       FROM classes
+       WHERE school_id = ?
+       ORDER BY class_order ASC`,
+      [school_id]
+    );
+
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteClass(class_id, school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [result] = await connection.query(
+      `UPDATE classes 
+       SET status = 0
+       WHERE class_id = ? AND school_id = ?`,
+      [class_id, school_id]
+    );
+
+    return result.affectedRows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function createSection(school_id, data) {
+  const connection = await db.getConnection();
+  try {
+    const { class_id, section_name, status } = data;
+
+    const [result] = await connection.query(
+      `INSERT INTO sections 
+       (school_id, class_id, section_name, status)
+       VALUES (?, ?, ?, ?)`,
+      [school_id, class_id, section_name, status ?? 1]
+    );
+
+    return { section_id: result.insertId };
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateSection(section_id, school_id, data) {
+  const connection = await db.getConnection();
+  try {
+    const { section_name, status } = data;
+
+    const [result] = await connection.query(
+      `UPDATE sections
+       SET section_name = ?, status = ?
+       WHERE section_id = ? AND school_id = ?`,
+      [section_name, status, section_id, school_id]
+    );
+
+    return result.affectedRows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getAllSections(school_id, class_id) {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(
+      `SELECT 
+         section_id,
+         class_id,
+         section_name,
+         status
+       FROM sections
+       WHERE school_id = ? AND class_id = ?
+       ORDER BY section_name ASC`,
+      [school_id, class_id]
+    );
+
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+

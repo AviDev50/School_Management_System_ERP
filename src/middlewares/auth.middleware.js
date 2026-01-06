@@ -18,21 +18,22 @@ export function authMiddleware(req, res, next) {
     //here we verify jwt and decode 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    //here we set req.user
+    //here in authmiddleware we set req.user
     req.user = {
       user_id: decoded.user_id,
       school_id: decoded.school_id,
       role: decoded.role,
       name: decoded.name,
-      email: decoded.email
+      user_email: decoded.user_email
     };
 
     if (decoded.role === 'super_admin') {
       req.user = {
         super_admin_id: decoded.super_admin_id,
         name: decoded.name,
-        email: decoded.email,
-        role: decoded.role //Role extracted from token here
+        user_email: decoded.user_email,
+        role: decoded.role,
+        school_id: null  //Role extracted from token here
       }; 
     }
 

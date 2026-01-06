@@ -77,17 +77,53 @@ export async function updateStudent(student_id, school_id, data) {
   const connection = await db.getConnection();
 
   try {
-    const [result] = await connection.query(
-      `UPDATE students
-       SET class_id= ?
-       WHERE student_id = ? AND school_id = ?`,
-      [data, student_id, school_id]
+    const fields = [];
+    const values = [];
+
+    if (data.gender !== undefined) {
+      fields.push("gender = ?");
+      values.push(data.gender);
+    }
+
+    if (data.class_id !== undefined) {
+      fields.push("class_id = ?");
+      values.push(data.class_id);
+    }
+
+    if (data.section_id !== undefined) {
+      fields.push("section_id = ?");
+      values.push(data.section_id);
+    }
+
+    if (fields.length === 0) return null;
+
+    const sql = `UPDATE students SET ${fields.join(", ")} WHERE student_id = ? AND school_id = ?`;
+    values.push(student_id, school_id);
+
+    const [result] = await connection.query(sql, values);
+    
+    if (result.affectedRows === 0) {
+      return null;
+    }
+
+    const [rows] = await connection.query(
+      `SELECT 
+        s.*,
+        u.name,
+        u.user_email,
+        c.class_name,
+        sec.section_name
+      FROM students s
+      JOIN users u ON s.user_id = u.user_id
+      JOIN classes c ON s.class_id = c.class_id
+      JOIN sections sec ON s.section_id = sec.section_id
+      WHERE s.student_id = ? AND s.school_id = ?`,
+      [student_id, school_id]
     );
 
-    return result.affectedRows;
+    return rows[0];
 
   } finally {
     connection.release();
   }
 }
-

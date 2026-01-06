@@ -24,18 +24,17 @@ export async function getStudentByIdService(data) {
 
 
 export async function updateStudentService(student_id, school_id, data) {
-
-  // delete data.student_id;
-
-  const affectedRows = await studentModel.updateStudent(
+  console.log(student_id, school_id);
+  
+  const updatedStudent = await studentModel.updateStudent(
     student_id,
     school_id,
     data
   );
 
-  if (affectedRows === 0) {
-    throw new Error("Student not found");
+  if (!updatedStudent) {
+    throw new Error("Student not found or no changes made");
   }
 
-  return true;
+  return updatedStudent;
 }
