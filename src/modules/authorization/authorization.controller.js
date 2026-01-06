@@ -1,5 +1,3 @@
-// modules/authorization/authorization.controller.js
-import jwt from 'jsonwebtoken';
 import * as authService from './authorization.service.js';
 
 // User Login (school_admin, teacher, student, accountant)

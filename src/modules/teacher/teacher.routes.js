@@ -4,7 +4,7 @@ import {
  // addTeacher 
  updateTeacher
 } from "./teacher.controller.js";
-import { authMiddleware,checkRole } from "../../middlewares/auth.middleware.js";
+import {authMiddleware,checkRole} from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
 router.put(

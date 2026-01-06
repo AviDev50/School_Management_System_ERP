@@ -192,6 +192,7 @@ export async function getTotalStudentsListService(data) {
   }
 }
 
+//added pagination here
 export async function getTotalTeachersListService(data) {
   try{
   const {school_id,page = 1, limit = 10} = data
@@ -224,3 +225,46 @@ export async function getTotalTeachersListService(data) {
     };
   }
 }
+
+export async function createClassService(school_id, data) {
+  return await schoolAdminModel.createClass(school_id, data);
+}
+
+export async function updateClassService(class_id, school_id, data) {
+  const updated = await schoolAdminModel.updateClass(class_id, school_id, data);
+
+  if (!updated) {
+    throw new Error("Class not found or not updated");
+  }
+
+  return true;
+}
+
+export async function getAllClassesService(school_id) {
+  return await schoolAdminModel.getAllClasses(school_id);
+}
+
+export async function deleteClassService(class_id, school_id) {
+  await schoolAdminModel.deleteClass(class_id, school_id);
+  return true;
+}
+
+export async function createSectionService(school_id, data) {
+  return await schoolAdminModel.createSection(school_id, data);
+}
+
+export async function updateSectionService(section_id, school_id, data) {
+  await schoolAdminModel.updateSection(section_id, school_id, data);
+  return true;
+}
+
+export async function getAllSectionsService(school_id, class_id) {
+  return await schoolAdminModel.getAllSections(school_id, class_id);
+}
+
+export async function deleteSectionService(section_id, school_id) {
+  await schoolAdminModel.deleteSection(section_id, school_id);
+  return true;
+}
+
+

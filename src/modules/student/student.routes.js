@@ -8,7 +8,6 @@ const router = express.Router();
 
 router.get("/getStudentDetailsById/:student_id",getStudentDetailsById)
 
-
 router.put(
   '/updateStudent',
   authMiddleware,
