@@ -1,11 +1,10 @@
 import * as authService from './authorization.service.js';
 
-// User Login (school_admin, teacher, student, accountant)
+// User Login like(school_admin, teacher, student, accountant)
 export async function login(req, res) {
   try {
     const { user_email, password } = req.body;
 
-    // Input validation
     if (!user_email || !password) {
       return res.status(400).json({
         success: false,
@@ -13,7 +12,6 @@ export async function login(req, res) {
       });
     }
 
-    // Call login service
     const result = await authService.loginService(user_email, password);
 
     return res.status(200).json({
@@ -25,7 +23,6 @@ export async function login(req, res) {
   } catch (error) {
     console.error("Login Error:", error.message);
 
-    // Handle specific errors
     if (error.message === "Invalid credentials") {
       return res.status(401).json({
         success: false,
@@ -54,7 +51,7 @@ export async function login(req, res) {
   }
 }
 
-// // Super Admin Login
+// // here Super Admin Login
 // export async function superAdminLogin(req, res) {
 //   try {
 //     const { email, password } = req.body;

@@ -267,4 +267,38 @@ export async function deleteSectionService(section_id, school_id) {
   return true;
 }
 
+export async function createSubjectService(school_id, data) {
+  return await schoolAdminModel.createSubject(school_id, data);
+}
+
+export async function updateSubjectService(subject_id,subject_name, school_id) {
+  await schoolAdminModel.updateSubject(subject_id,subject_name,school_id);
+  return true;
+}
+
+export async function getAllSubjectsService(school_id) {
+  return await schoolAdminModel.getAllSubjects(school_id);
+}
+
+export async function deleteSubjectService(subject_id, school_id) {
+  await schoolAdminModel.deleteSubject(subject_id, school_id);
+  return true;
+}
+
+export async function createTimetableService(data) {
+  return await schoolAdminModel.createTimetable(data);
+}
+
+export async function updateTimetableService(timetable_id, data) {
+  return await schoolAdminModel.updateTimetable(timetable_id, data);
+}
+
+export async function deleteTimetableService(timetable_id) {
+  return await schoolAdminModel.deleteTimetable(timetable_id);
+}
+
+export async function getTimetableService(data) {
+  return await schoolAdminModel.getTimetable(data);
+}
+
 

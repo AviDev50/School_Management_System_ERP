@@ -2,7 +2,7 @@
 // import jwt from "jsonwebtoken";
 import db from "../../config/db.js";
 
-// Get user by email (for login)
+//here we  Get user by email (for login)
 export async function getUserByEmail(user_email, connection = null) {
   const conn = connection || await db.getConnection();
   try {

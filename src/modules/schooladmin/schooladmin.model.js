@@ -304,3 +304,167 @@ export async function getAllSections(school_id, class_id) {
   }
 }
 
+export async function deleteSection(section_id, school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [result] = await connection.query(
+      `UPDATE sections
+       SET status = 0
+       WHERE section_id = ? AND school_id = ?`,
+      [section_id, school_id]
+    );
+
+    return result.affectedRows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function createSubject(school_id, data) {
+  const connection = await db.getConnection();
+  try {
+    const { subject_name, status } = data;
+
+    const [result] = await connection.query(
+      `INSERT INTO subjects 
+       (school_id, subject_name, status)
+       VALUES (?, ?, ?)`,
+      [school_id, subject_name, status ?? 1]
+    );
+
+    return { subject_id: result.insertId };
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateSubject(subject_id,subject_name, school_id) {
+  const connection = await db.getConnection();
+  try {
+    //const { subject_id,subject_name, school_id} = data;
+
+    const [result] = await connection.query(
+      `UPDATE subjects
+       SET subject_name = ?
+       WHERE subject_id = ? AND school_id = ?`,
+      [subject_name,subject_id, school_id]
+    );
+
+    return result.affectedRows;
+
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getAllSubjects(school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(
+      `SELECT 
+         subject_id,
+         subject_name,
+         status
+       FROM subjects
+       WHERE school_id = ?
+       ORDER BY subject_name ASC`,
+      [school_id]
+    );
+
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteSubject(subject_id, school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [result] = await connection.query(
+      `UPDATE subjects
+       SET status = 0
+       WHERE subject_id = ? AND school_id = ?`,
+      [subject_id, school_id]
+    );
+
+    return result.affectedRows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function createTimetable(data) {
+  const connection = await db.getConnection();
+  try {
+    const sql = `
+      INSERT INTO timetables
+      (school_id, class_id, section_id, subject_id, teacher_id, day_of_week, start_time, end_time)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    await connection.query(sql, [
+      data.school_id,
+      data.class_id,
+      data.section_id,
+      data.subject_id,
+      data.teacher_id,
+      data.day_of_week,
+      data.start_time,
+      data.end_time
+    ]);
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateTimetable(timetable_id, data) {
+  const connection = await db.getConnection();
+  try {
+    const sql = `
+      UPDATE timetables
+      SET subject_id = ?, teacher_id = ?, start_time = ?, end_time = ?
+      WHERE timetable_id = ?
+    `;
+    await connection.query(sql, [
+      data.subject_id,
+      data.teacher_id,
+      data.start_time,
+      data.end_time,
+      timetable_id
+    ]);
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteTimetable(timetable_id) {
+  const connection = await db.getConnection();
+  try {
+    await connection.query(
+      "DELETE FROM timetables WHERE timetable_id = ?",
+      [timetable_id]
+    );
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getTimetable({ school_id, class_id, section_id }) {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(
+      `SELECT * FROM timetables
+       WHERE school_id = ? AND class_id = ? AND section_id = ?
+       ORDER BY day_of_week, start_time`,
+      [school_id, class_id, section_id]
+    );
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+
+
+
+
+
+
