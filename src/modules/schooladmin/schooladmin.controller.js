@@ -191,7 +191,7 @@ export async function deleteSection(req, res) {
     const { section_id } = req.body;
     const school_id = req.user.school_id;
 
-    await deleteSectionService(section_id, school_id);
+    await schoolAdminService.deleteSectionService(section_id, school_id);
 
     res.json({
       success: true,
@@ -204,5 +204,125 @@ export async function deleteSection(req, res) {
     });
   }
 }
+
+export async function createSubject(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    const result = await schoolAdminService.createSubjectService(school_id, req.body);
+
+    res.json({
+      success: true,
+      message: "Subject created successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function updateSubject(req, res) {
+  try {
+    const { subject_id, subject_name} = req.body;
+
+    const school_id = req.user.school_id;
+
+    await schoolAdminService.updateSubjectService(subject_id,subject_name,school_id);
+
+    res.json({
+      success: true,
+      message: "Subject updated successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function getAllSubjects(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    const subjects = await getAllSubjectsService(school_id);
+
+    res.json({
+      success: true,
+      data: subjects,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function deleteSubject(req, res) {
+  try {
+    const { subject_id } = req.body;
+    const school_id = req.user.school_id;
+
+    await schoolAdminService.deleteSubjectService(subject_id, school_id);
+
+    res.json({
+      success: true,
+      message: "Subject deleted successfully",
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function createTimetable(req, res) {
+  try {
+    await schoolAdminService.createTimetableService(req.body);
+    res.json({ message: "Timetable created successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function updateTimetable(req, res) {
+  try {
+    await schoolAdminService.updateTimetableService(
+      req.params.timetable_id,
+      req.body
+    );
+    res.json({ message: "Timetable updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function deleteTimetable(req, res) {
+  try {
+    await schoolAdminService.deleteTimetableService(req.params.timetable_id);
+    res.json({ message: "Timetable deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function getTimetable(req, res) {
+  try {
+    const data = await schoolAdminService.getTimetableService(req.query);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
+
 
 
