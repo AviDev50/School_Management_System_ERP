@@ -1,59 +1,83 @@
 import db from "../../config/db.js";
 
-export async function getUserByEmail(user_email, connection) {
+export async function getUserByEmail(user_email, school_id, connection) {
   const [rows] = await connection.query(
-    "SELECT user_id FROM users WHERE user_email = ?",
-    [user_email]
+    `SELECT user_id FROM users 
+     WHERE user_email = ? AND school_id = ?`,
+    [user_email, school_id]
   );
-  return rows[0];
+
+  return rows.length ? rows[0] : null;
 }
 
-export async function createUser({ name, user_email, password, role, school_id }) {
-  const [result] = await db.query(
-    "INSERT INTO users (school_id,name, user_email, password, role) VALUES (?, ?, ?, ?, ?)",
-    [school_id,name, user_email, password, role]
+export async function createUser(data, connection) {
+  const [result] = await connection.query(
+    `INSERT INTO users
+     (school_id, name, user_email, password, role)
+     VALUES (?, ?, ?, ?, ?)`,
+    [
+      data.school_id,
+      data.name,
+      data.user_email,
+      data.password,
+      data.role
+    ]
   );
+
   return result.insertId;
 }
 
-export async function createStudent(
-  { school_id, user_id, admission_no, gender, class_id, section_id },
-  connection
-) {
+export async function createStudent(data, connection) {
   const [result] = await connection.query(
-    `INSERT INTO students 
+    `INSERT INTO students
      (school_id, user_id, admission_no, gender, class_id, section_id)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    [school_id, user_id, admission_no, gender, class_id, section_id]
+    [
+      data.school_id,
+      data.user_id,
+      data.admission_no,
+      data.gender,
+      data.class_id,
+      data.section_id
+    ]
   );
+
   return result.insertId;
 }
 
-export async function createTeacher(
-  { school_id,user_id,qualification,experience_years,joining_date},
-  connection
-) {
+export async function createTeacher(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO teachers
-     (school_id,user_id,qualification,experience_years,joining_date)
+     (school_id, user_id, qualification, experience_years, joining_date)
      VALUES (?, ?, ?, ?, ?)`,
-    [school_id,user_id,qualification,experience_years,joining_date]
+    [
+      data.school_id,
+      data.user_id,
+      data.qualification,
+      data.experience_years,
+      data.joining_date
+    ]
   );
+
   return result.insertId;
 }
 
-export async function createAccountant(
-  { school_id,user_id,qualification,experience_years,joining_date},
-  connection
-) {
+
+export async function createAccountant(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO accountants
-     (school_id,user_id,qualification)
-     VALUES (?,?,?)`,
-    [school_id,user_id,qualification]
+     (school_id, user_id, qualification)
+     VALUES (?, ?, ?)`,
+    [
+      data.school_id,
+      data.user_id,
+      data.qualification
+    ]
   );
+
   return result.insertId;
 }
+
 
 /**
  * Here we Get students list with pagination
@@ -421,12 +445,13 @@ export async function updateTimetable(timetable_id, data) {
   try {
     const sql = `
       UPDATE timetables
-      SET subject_id = ?, teacher_id = ?, start_time = ?, end_time = ?
+      SET subject_id = ?, teacher_id = ?,day_of_week=? ,start_time = ?, end_time = ?
       WHERE timetable_id = ?
     `;
     await connection.query(sql, [
       data.subject_id,
       data.teacher_id,
+      data.day_of_week,
       data.start_time,
       data.end_time,
       timetable_id
@@ -461,6 +486,63 @@ export async function getTimetable({ school_id, class_id, section_id }) {
   } finally {
     connection.release();
   }
+}
+
+export async function insertAttendance(data, school_id) {
+  const sql = `
+    INSERT INTO student_attendance
+    (school_id, student_id, class_id, section_id, attendance_date, status, remarks)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+  await db.query(sql, [
+    school_id,
+    data.student_id,
+    data.class_id,
+    data.section_id,
+    data.attendance_date,
+    data.status,
+    data.remarks || null
+  ]);
+}
+
+export async function updateAttendance(attendance_id, data, school_id) {
+  const sql = `
+    UPDATE student_attendance
+    SET status = ?, remarks = ?
+    WHERE attendance_id = ? AND school_id = ?
+  `;
+  await db.query(sql, [
+    data.status,
+    data.remarks || null,
+    attendance_id,
+    school_id
+  ]);
+}
+
+export async function getAttendance({ class_id, section_id, date }, school_id) {
+  const sql = `
+    SELECT *
+    FROM student_attendance
+    WHERE school_id = ?
+      AND class_id = ?
+      AND section_id = ?
+      AND attendance_date = ?
+  `;
+  const [rows] = await db.query(sql, [
+    school_id,
+    class_id,
+    section_id,
+    date
+  ]);
+  return rows;
+}
+
+export async function deleteAttendance(attendance_id, school_id) {
+  const sql = `
+    DELETE FROM student_attendance
+    WHERE attendance_id = ? AND school_id = ?
+  `;
+  await db.query(sql, [attendance_id, school_id]);
 }
 
 
