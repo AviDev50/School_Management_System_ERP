@@ -2,29 +2,68 @@ import * as schoolAdminService from "./schooladmin.service.js";
 
 export async function registerTeacher(req, res) {
   try {
-    const result = await schoolAdminService.registerTeacherService(req.body);
-    return res.status(201).json({ success: true, message: "Teacher registered successfully", data: result });
-  } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    const school_id = req.user.school_id;
+    const data = {
+      ...req.body,
+      school_id
+    };
+
+    const result = await schoolAdminService.registerTeacherService(data);
+
+    return res.status(201).json({
+      success: true,
+      message: "Teacher registered successfully",
+      data: result
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 }
 
 export async function registerStudent(req, res) {
   try {
-    const result = await schoolAdminService.registerStudentService(req.body);
-    console.log(req.body)
-    return res.status(201).json({ success: true, message: "Student registered successfully", data: result });
-  } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    const school_id = req.user.school_id;
+
+    const result = await schoolAdminService.registerStudentService({
+      ...req.body,
+      school_id
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Student registered successfully",
+      data: result
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 }
 
 export async function registerAccountant(req, res) {
   try {
-    const result = await schoolAdminService.registerAccountantService(req.body);
-    return res.status(201).json({ success: true, message: "Accountant registered successfully", data: result });
-  } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    const school_id = req.user.school_id;
+
+    const result = await schoolAdminService.registerAccountantService({
+      ...req.body,
+      school_id
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Accountant registered successfully",
+      data: result
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 }
 
@@ -249,7 +288,7 @@ export async function getAllSubjects(req, res) {
   try {
     const school_id = req.user.school_id;
 
-    const subjects = await getAllSubjectsService(school_id);
+    const subjects = await schoolAdminService.getAllSubjectsService(school_id);
 
     res.json({
       success: true,
@@ -285,28 +324,89 @@ export async function deleteSubject(req, res) {
 
 export async function createTimetable(req, res) {
   try {
-    await schoolAdminService.createTimetableService(req.body);
-    res.json({ message: "Timetable created successfully" });
+    const school_id = req.user.school_id;
+    const {
+      class_id,
+      section_id,
+      subject_id,
+      teacher_id,
+      day_of_week,
+      start_time,
+      end_time,
+    } = req.body;
+
+    if (
+      !class_id ||
+      !section_id ||
+      !subject_id ||
+      !teacher_id ||
+      !day_of_week ||
+      !start_time ||
+      !end_time
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All required fields must be provided",
+      });
+    }
+
+    await schoolAdminService.createTimetableService({
+      school_id,
+      class_id,
+      section_id,
+      subject_id,
+      teacher_id,
+      day_of_week,
+      start_time,
+      end_time,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Timetable created successfully",
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 }
 
+
 export async function updateTimetable(req, res) {
   try {
+    const school_id = req.user.school_id;
+    const { timetable_id } = req.params;
+
+    if (!timetable_id) {
+      return res.status(400).json({
+        success: false,
+        message: "timetable_id required",
+      });
+    }
+
     await schoolAdminService.updateTimetableService(
-      req.params.timetable_id,
+      timetable_id,
+      school_id,
       req.body
     );
-    res.json({ message: "Timetable updated successfully" });
+
+    res.json({
+      success: true,
+      message: "Timetable updated successfully",
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 }
 
 export async function deleteTimetable(req, res) {
   try {
-    await schoolAdminService.deleteTimetableService(req.params.timetable_id);
+    await schoolAdminService.deleteTimetableService(req.body.timetable_id);
     res.json({ message: "Timetable deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -315,12 +415,94 @@ export async function deleteTimetable(req, res) {
 
 export async function getTimetable(req, res) {
   try {
-    const data = await schoolAdminService.getTimetableService(req.query);
+    const school_id = req.user.school_id; 
+    const { class_id, section_id} = req.params;
+     console.log("PARAMS:", req.params);
+     console.log("SCHOOL ID:", school_id);
+
+    if (!class_id || !section_id) {
+      return res.status(400).json({
+        success: false,
+        message: "class_id, section_id required",
+      });
+    }
+
+    const data = await schoolAdminService.getTimetable(
+      school_id,
+      class_id,
+      section_id
+    );
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function createStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    await schoolAdminService.createAttendanceService(req.body, school_id);
+    res.json({ message: "Attendance marked successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function updateStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.params;
+
+    await schoolAdminService.updateAttendanceService(
+      attendance_id,
+      req.body,
+      school_id
+    );
+
+    res.json({ message: "Attendance updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export async function getStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const data = await schoolAdminService.getAttendanceService(
+      req.query,
+      school_id
+    );
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
+
+export async function deleteStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.body;
+
+    await schoolAdminService.deleteAttendanceService(
+      attendance_id,
+      school_id
+    );
+
+    res.json({ message: "Attendance deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
+
 
 
 

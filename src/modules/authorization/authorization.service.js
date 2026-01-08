@@ -45,7 +45,7 @@ export async function loginService(user_email, password) {
       user_email: user.user_email
     },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '99h' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '30d' }
   );
 
   //Here we Return user data

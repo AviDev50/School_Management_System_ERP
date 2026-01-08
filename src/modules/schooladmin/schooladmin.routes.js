@@ -20,7 +20,11 @@ import {
   createTimetable,
   getTimetable,
   updateTimetable,
-  deleteTimetable
+  deleteTimetable,
+  createStudentAttendance,
+  updateStudentAttendance,
+  getStudentAttendance,
+  deleteStudentAttendance
 } from "./schooladmin.controller.js";
 import {
   authMiddleware,
@@ -29,9 +33,9 @@ import {
 
 const router = express.Router();
 
-router.post("/registerTeacher", registerTeacher);
-router.post("/registerStudent", registerStudent);
-router.post("/registerAccountant", registerAccountant);
+router.post("/registerTeacher",authMiddleware,checkRole(["school_admin"]),registerTeacher);
+router.post("/registerStudent",authMiddleware,checkRole(["school_admin"]), registerStudent);
+router.post("/registerAccountant",authMiddleware,checkRole(["school_admin"]), registerAccountant);
 router.post("/getTotalStudentsListBySchoolId", getTotalStudentsListBySchoolId);
 router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);
 router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);
@@ -129,7 +133,7 @@ router.put(
 );
 
 router.get(
-  "/getTimetable",
+  "/getTimetable/:class_id/:section_id",
   authMiddleware,
   checkRole(["school_admin"]),
   getTimetable
@@ -141,5 +145,35 @@ router.delete(
   checkRole(["school_admin"]),
   deleteTimetable
 );
+
+router.post(
+  "/createStudentAttendance",
+  authMiddleware,
+  checkRole(["school_admin"]),
+  createStudentAttendance
+);
+
+router.put(
+  "/updateStudentAttendance",
+  authMiddleware,
+  checkRole(["school_admin"]),
+  updateStudentAttendance
+);
+
+router.get(
+  "/getStudentAttendance/:class_id/:section_id",
+  authMiddleware,
+  checkRole(["school_admin"]),
+  getStudentAttendance
+);
+
+
+router.delete(
+  "/deleteStudentAttendance",
+  authMiddleware,
+  checkRole(["school_admin"]),
+  deleteStudentAttendance
+);
+
 
 export default router;

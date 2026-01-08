@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import db from "../../config/db.js";
 import * as superAdminModel from "./superadmin.model.js";
 
-export async function createSchoolWithAdmin(data) {
+export async function createSchoolWithAdminService(data) {
   const {
     school_name,
     email,

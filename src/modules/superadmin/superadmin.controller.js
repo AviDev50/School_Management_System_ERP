@@ -105,7 +105,7 @@ import * as superAdminService from "./superadmin.service.js";
 export async function createSchoolWithAdmin(req, res) {
   try {
      console.log(req.body);
-    const result = await superAdminService.createSchoolWithAdmin(req.body);
+    const result = await superAdminService.createSchoolWithAdminService(req.body);
 
     return res.status(201).json({
       success: true,

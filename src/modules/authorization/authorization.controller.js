@@ -1,6 +1,6 @@
 import * as authService from './authorization.service.js';
 
-// User Login like(school_admin, teacher, student, accountant)
+//Here we User Login like(school_admin, teacher, student, accountant)
 export async function login(req, res) {
   try {
     const { user_email, password } = req.body;

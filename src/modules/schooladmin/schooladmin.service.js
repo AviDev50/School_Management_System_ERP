@@ -1,57 +1,90 @@
+import db from "../../config/db.js";
 import bcrypt from "bcrypt";
 import * as schoolAdminModel from "./schoolAdmin.model.js";
-import db from "../../config/db.js";
+
 
 // Common function for all 
-async function registerUser(
-  { name, user_email, password, role, school_id },
-  connection
-) {
-  if (!school_id || !name || !user_email || !password) {
-    throw new Error("Required fields missing");
+export async function registerUser(data, connection) {
+  try {
+ 
+    const checkQuery = `SELECT user_id FROM users WHERE user_email = ? AND school_id = ?`;
+
+    const [existing] = await connection.query(
+      checkQuery,
+      [data.user_email, data.school_id]
+    );
+
+    if (existing.length > 0) {
+      console.log("Email exists, throwing error");
+      throw new Error("Email already exists");
+    }
+
+    console.log("Email available, proceeding to insert");
+
+    const [result] = await connection.query(
+      `INSERT INTO users
+       (school_id, name, user_email, password, role)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        data.school_id,
+        data.name,
+        data.user_email,
+        data.password,
+        data.role
+      ]
+    );
+
+    console.log("User inserted with ID:", result.insertId);
+    return result.insertId;
+    
+  } catch (err) {
+    console.error("Error details:", err);
+    throw err;
   }
-
-  const existing = await schoolAdminModel.getUserByEmail(
-    user_email,
-    connection
-  );
-  
-  if (existing) throw new Error("Email already exists");
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const userId = await schoolAdminModel.createUser(
-    {
-      name,
-      user_email,
-      password: hashedPassword,
-      role,
-      school_id
-    },
-    connection
-  );
-
-  return { user_id: userId, role };
 }
 
-// Exported functions for all 
-export async function registerTeacherService(data){
-  const connection = await db.getConnection()
-    try {
-      await connection.beginTransaction();
+export async function registerTeacherService(data) {
+  const connection = await db.getConnection();
 
-      const{school_id,name,user_email,password,qualification,experience_years,joining_date} = data
+  try {
+    await connection.beginTransaction();
 
-      const user = await registerUser({school_id,name,user_email,password,role:"Teacher"},connection)
+    const {
+      school_id,
+      name,
+      user_email,
+      password,
+      qualification,
+      experience_years,
+      joining_date
+    } = data;
 
-      await schoolAdminModel.createTeacher({
-      school_id,user_id: user.user_id,qualification,experience_years,joining_date
-      },connection)
+    const user_id = await registerUser(
+      {
+        name,
+        user_email,
+        password,
+        role: "teacher",
+        school_id
+      },
+      connection
+    );
 
-     await connection.commit()
-     return user
+    await schoolAdminModel.createTeacher(
+      {
+        school_id,
+        user_id,
+        qualification,
+        experience_years,
+        joining_date
+      },
+      connection
+    );
 
-    } catch (err) {
+    await connection.commit();
+    return { user_id };
+
+  } catch (err) {
     await connection.rollback();
     throw err;
   } finally {
@@ -66,33 +99,31 @@ export async function registerStudentService(data) {
     await connection.beginTransaction();
 
     const {
+      school_id,
       name,
       user_email,
       password,
-      school_id,
       admission_no,
       gender,
       class_id,
       section_id
     } = data;
 
-    // Creating user profile here in users table
-    const user = await registerUser(
+    const user_id = await registerUser(
       {
         name,
         user_email,
         password,
-        role: "STUDENT",
+        role: "student",
         school_id
       },
       connection
     );
 
-    // Creating student profile here in student table
     await schoolAdminModel.createStudent(
       {
         school_id,
-        user_id: user.user_id,
+        user_id,
         admission_no,
         gender,
         class_id,
@@ -102,7 +133,7 @@ export async function registerStudentService(data) {
     );
 
     await connection.commit();
-    return user;
+    return { user_id };
 
   } catch (err) {
     await connection.rollback();
@@ -118,30 +149,36 @@ export async function registerAccountantService(data) {
   try {
     await connection.beginTransaction();
 
-    const{school_id,name,user_email,password,qualification} = data
+    const {
+      school_id,
+      name,
+      user_email,
+      password,
+      qualification
+    } = data;
 
-    // Creating user profile here in users table
-    const user = await registerUser(
+    const user_id = await registerUser(
       {
         name,
         user_email,
         password,
-        role:"Accountant",
+        role: "accountant",
         school_id
       },
       connection
     );
 
-    // Creating student profile here in student table
     await schoolAdminModel.createAccountant(
       {
-        school_id,user_id:user.user_id,qualification
+        school_id,
+        user_id,
+        qualification
       },
       connection
     );
 
     await connection.commit();
-    return user;
+    return { user_id };
 
   } catch (err) {
     await connection.rollback();
@@ -297,8 +334,37 @@ export async function deleteTimetableService(timetable_id) {
   return await schoolAdminModel.deleteTimetable(timetable_id);
 }
 
-export async function getTimetableService(data) {
-  return await schoolAdminModel.getTimetable(data);
+export async function getTimetable(school_id, class_id, section_id) {
+  return await schoolAdminModel.getTimetable({
+    school_id,
+    class_id,
+    section_id,
+  });
 }
+
+
+export async function createAttendanceService(data, school_id) {
+  return schoolAdminModel.insertAttendance(data, school_id);
+}
+
+export async function updateAttendanceService(attendance_id, data, school_id) {
+  return schoolAdminModel.updateAttendance(
+    attendance_id,
+    data,
+    school_id
+  );
+}
+
+export async function getAttendanceService(query, school_id) {
+  return schoolAdminModel.getAttendance(query, school_id);
+}
+
+export async function deleteAttendanceService(attendance_id, school_id) {
+  return schoolAdminModel.deleteAttendance(
+    attendance_id,
+    school_id
+  );
+}
+
 
 
