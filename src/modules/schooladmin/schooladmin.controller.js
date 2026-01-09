@@ -3,12 +3,19 @@ import * as schoolAdminService from "./schooladmin.service.js";
 export async function registerTeacher(req, res) {
   try {
     const school_id = req.user.school_id;
-    const data = {
-      ...req.body,
-      school_id
-    };
 
-    const result = await schoolAdminService.registerTeacherService(data);
+    // here we get path from files
+    const photos = {};
+    if (req.files) {
+      photos.teacher_photo = req.files.teacher_photo?.[0]?.path || null;
+      photos.aadhar_card = req.files.aadhar_card?.[0]?.path || null;
+    }
+
+    const result = await schoolAdminService.registerTeacherService({
+      ...req.body,
+      ...photos,
+      school_id
+    });
 
     return res.status(201).json({
       success: true,
@@ -23,12 +30,23 @@ export async function registerTeacher(req, res) {
   }
 }
 
+//register student with image
 export async function registerStudent(req, res) {
   try {
     const school_id = req.user.school_id;
 
+    //here we add Uploaded files paths
+    const photos = {};
+    if (req.files) {
+      photos.student_photo = req.files.student_photo?.[0]?.path || null;
+      photos.aadhar_card = req.files.aadhar_card?.[0]?.path || null;
+      photos.father_photo = req.files.father_photo?.[0]?.path || null;
+      photos.mother_photo = req.files.mother_photo?.[0]?.path || null;
+    }
+
     const result = await schoolAdminService.registerStudentService({
       ...req.body,
+      ...photos,
       school_id
     });
 
@@ -49,8 +67,15 @@ export async function registerAccountant(req, res) {
   try {
     const school_id = req.user.school_id;
 
+    const photos = {};
+    if (req.files) {
+      photos.accountant_photo = req.files.accountant_photo?.[0]?.path || null;
+      photos.aadhar_card = req.files.aadhar_card?.[0]?.path || null;
+    }
+
     const result = await schoolAdminService.registerAccountantService({
       ...req.body,
+      ...photos,
       school_id
     });
 
@@ -66,6 +91,7 @@ export async function registerAccountant(req, res) {
     });
   }
 }
+
 
 export async function getTotalStudentsListBySchoolId(req,res) {
   try {

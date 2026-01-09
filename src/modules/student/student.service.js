@@ -5,21 +5,35 @@ import * as studentModel from './student.model.js';
 
 
 
-export async function getStudentByIdService(data) {
-  try {
-    const { student_id } = data;
+export async function getStudentByIdService(params, req) {
+  const { student_id } = params;
 
-    if (!student_id) {
-      throw new Error("student_id is required");
-    }
-
-    const students = await studentModel.getStudentById(student_id);
-
-    return students;
-  } catch (error) {
-    console.error("Service error (getStudentById):", error);
-    throw error;
+  const student = await studentModel.getStudentById(student_id);
+  if (!student) {
+    throw new Error("Student not found");
   }
+
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  return {
+    ...student,
+
+    student_photo_url: student.student_photo
+      ? `${baseUrl}/${student.student_photo}`
+      : null,
+
+    aadhar_card_url: student.aadhar_card
+      ? `${baseUrl}/${student.aadhar_card}`
+      : null,
+
+    father_photo_url: student.father_photo
+      ? `${baseUrl}/${student.father_photo}`
+      : null,
+
+    mother_photo_url: student.mother_photo
+      ? `${baseUrl}/${student.mother_photo}`
+      : null
+  };
 }
 
 
