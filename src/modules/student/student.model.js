@@ -1,46 +1,29 @@
 import db from "../../config/db.js";
 
-// export async function getStudentById(student_id) {
-//   const connection = await db.getConnection();
+export async function getStudentById(student_id) {
+  const [rows] = await db.query(
+    `SELECT 
+        s.student_id,
+        s.school_id,
+        s.admission_no,
+        s.gender,
+        s.class_id,
+        s.section_id,
+        s.student_photo,
+        s.aadhar_card,
+        s.father_photo,
+        s.mother_photo,
+        u.name,
+        u.user_email
+     FROM students s
+     JOIN users u ON u.user_id = s.user_id
+     WHERE s.student_id = ?`,
+    [student_id]
+  );
 
-//   try {
-//     const [rows] = await connection.query(
-//       "SELECT * FROM students WHERE student_id = ?",
-//       [student_id]
-//     );
-
-//     return rows;
-//   } catch (error) {
-//     console.error("Error getting student details:", error);
-//     throw error;
-//   } finally {
-//     connection.release(); 
-//   }
-// }
-
-// modules/student/student.model.js
-
-// Get student by ID
-export async function getStudentById(studentId, schoolId, connection = null) {
-  const conn = connection || await db.getConnection();
-
-  try {
-    const [students] = await conn.query(
-      `SELECT
-        s.student_id, s.user_id, s.admission_no, s.gender, 
-        s.class_id, s.section_id,
-        u.name, u.user_email
-      FROM students s
-      JOIN users u ON s.user_id = u.user_id
-      WHERE s.student_id = ? AND s.school_id = ?`,
-      [studentId, schoolId]
-    );
-
-    return students[0] || null;
-  } finally {
-    if (!connection) conn.release();
-  }
+  return rows[0];
 }
+
 
 // Checking here user_email exists excluding user
 export async function checkuser_emailExistsExcludingUser(user_email, schoolId, excludeUserId, connection = null) {

@@ -1,16 +1,20 @@
+import dotenv from "dotenv"
+dotenv.config()
 import express from "express";
 import cors from "cors";
 import routes from "./src/routes/index.js";
 import authRoutes from "./src/modules/authorization/authorization.routes.js";
-import dotenv from "dotenv"
-dotenv.config()
+
 
 const app = express();
 
-// Middleware
+// middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/uploads", express.static("uploads"));
+
 
 // Routes
 app.use("/api/auth", authRoutes);  // Auth routes pehle

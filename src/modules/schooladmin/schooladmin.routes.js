@@ -30,12 +30,38 @@ import {
   authMiddleware,
   checkRole,
 } from "../../middlewares/auth.middleware.js";
+import {studentUpload} from "../../middlewares/student.multer.js"
+import { teacherUpload } from "../../middlewares/teacher.multer.js";
+import { accountantUpload } from "../../middlewares/accountant.multer.js";
 
 const router = express.Router();
+// here we add Student with images
+router.post(
+  "/registerStudent",
+  authMiddleware,
+  checkRole(["school_admin"]),
+  studentUpload,
+  registerStudent
+);
 
-router.post("/registerTeacher",authMiddleware,checkRole(["school_admin"]),registerTeacher);
-router.post("/registerStudent",authMiddleware,checkRole(["school_admin"]), registerStudent);
-router.post("/registerAccountant",authMiddleware,checkRole(["school_admin"]), registerAccountant);
+// here we add Teacher with images
+router.post(
+  "/registerTeacher",
+  authMiddleware,
+  checkRole(["school_admin"]),
+  teacherUpload,
+  registerTeacher
+);
+
+// here we add Accountant with images
+router.post(
+  "/registerAccountant",
+  authMiddleware,
+  checkRole(["school_admin"]),
+  accountantUpload,
+  registerAccountant
+);
+
 router.post("/getTotalStudentsListBySchoolId", getTotalStudentsListBySchoolId);
 router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);
 router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);

@@ -54,9 +54,10 @@ export async function registerTeacherService(data) {
       name,
       user_email,
       password,
+     // gender,
       qualification,
-      experience_years,
-      joining_date
+      teacher_photo,
+      aadhar_card
     } = data;
 
     const user_id = await registerUser(
@@ -74,9 +75,10 @@ export async function registerTeacherService(data) {
       {
         school_id,
         user_id,
+       // gender,
         qualification,
-        experience_years,
-        joining_date
+        teacher_photo,
+        aadhar_card
       },
       connection
     );
@@ -106,7 +108,11 @@ export async function registerStudentService(data) {
       admission_no,
       gender,
       class_id,
-      section_id
+      section_id,
+      student_photo,
+      aadhar_card,
+      father_photo,
+      mother_photo
     } = data;
 
     const user_id = await registerUser(
@@ -127,7 +133,11 @@ export async function registerStudentService(data) {
         admission_no,
         gender,
         class_id,
-        section_id
+        section_id,
+        student_photo,
+        aadhar_card,
+        father_photo,
+        mother_photo
       },
       connection
     );
@@ -143,6 +153,7 @@ export async function registerStudentService(data) {
   }
 }
 
+
 export async function registerAccountantService(data) {
   const connection = await db.getConnection();
 
@@ -154,7 +165,9 @@ export async function registerAccountantService(data) {
       name,
       user_email,
       password,
-      qualification
+      qualification,
+      accountant_photo,
+      aadhar_card
     } = data;
 
     const user_id = await registerUser(
@@ -172,7 +185,9 @@ export async function registerAccountantService(data) {
       {
         school_id,
         user_id,
-        qualification
+        qualification,
+        accountant_photo,
+        aadhar_card
       },
       connection
     );

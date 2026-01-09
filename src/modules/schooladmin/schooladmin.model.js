@@ -30,32 +30,39 @@ export async function createUser(data, connection) {
 export async function createStudent(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO students
-     (school_id, user_id, admission_no, gender, class_id, section_id)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+     (school_id, user_id, admission_no, gender, class_id, section_id,
+      student_photo, aadhar_card, father_photo, mother_photo)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.school_id,
       data.user_id,
       data.admission_no,
       data.gender,
       data.class_id,
-      data.section_id
+      data.section_id,
+      data.student_photo,
+      data.aadhar_card,
+      data.father_photo,
+      data.mother_photo
     ]
   );
 
   return result.insertId;
 }
 
+
 export async function createTeacher(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO teachers
-     (school_id, user_id, qualification, experience_years, joining_date)
+     (school_id, user_id,qualification, teacher_photo, aadhar_card)
      VALUES (?, ?, ?, ?, ?)`,
     [
       data.school_id,
       data.user_id,
+    //  data.gender,
       data.qualification,
-      data.experience_years,
-      data.joining_date
+      data.teacher_photo,
+      data.aadhar_card
     ]
   );
 
@@ -66,12 +73,14 @@ export async function createTeacher(data, connection) {
 export async function createAccountant(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO accountants
-     (school_id, user_id, qualification)
-     VALUES (?, ?, ?)`,
+     (school_id, user_id, qualification, accountant_photo, aadhar_card)
+     VALUES (?, ?, ?, ?, ?)`,
     [
       data.school_id,
       data.user_id,
-      data.qualification
+      data.qualification,
+      data.accountant_photo,
+      data.aadhar_card
     ]
   );
 
