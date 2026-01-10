@@ -1,16 +1,17 @@
 import db from "../../config/db.js";
 
-export async function getUserByEmail(user_email, school_id, connection) {
+export async function findUserByEmailAndSchool(user_email, school_id, connection) {
   const [rows] = await connection.query(
-    `SELECT user_id FROM users 
+    `SELECT user_id 
+     FROM users 
      WHERE user_email = ? AND school_id = ?`,
     [user_email, school_id]
   );
 
-  return rows.length ? rows[0] : null;
+  return rows;
 }
 
-export async function createUser(data, connection) {
+export async function insertUser(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO users
      (school_id, name, user_email, password, role)
@@ -69,7 +70,6 @@ export async function createTeacher(data, connection) {
   return result.insertId;
 }
 
-
 export async function createAccountant(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO accountants
@@ -86,7 +86,6 @@ export async function createAccountant(data, connection) {
 
   return result.insertId;
 }
-
 
 /**
  * Here we Get students list with pagination

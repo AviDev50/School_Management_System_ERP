@@ -13,6 +13,7 @@ router.put(
   checkRole(['school_admin']),
   updateTeacher
 );
+
 //router.post("/login", login);
 // router.get("/getSchoolDetailsById/:id", verifyToken, getSchoolDetailsById);
 //router.post("/addTeacher",addTeacher);

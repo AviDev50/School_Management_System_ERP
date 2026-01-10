@@ -33,14 +33,21 @@ import {
 import {studentUpload} from "../../middlewares/student.multer.js"
 import { teacherUpload } from "../../middlewares/teacher.multer.js";
 import { accountantUpload } from "../../middlewares/accountant.multer.js";
+import { checkPermission } from "../../middlewares/permission.middleware.js";
 
 const router = express.Router();
 // here we add Student with images
-router.post(
-  "/registerStudent",
-  authMiddleware,
-  checkRole(["school_admin"]),
-  studentUpload,
+// router.post(
+//   "/registerStudent",
+//   authMiddleware,
+//   checkRole(["school_admin"]),
+//   studentUpload,
+//   registerStudent
+// );
+router.post('/registerStudent', 
+  authMiddleware, 
+  checkPermission('add_student'),  //added Permission check here
+  studentUpload, 
   registerStudent
 );
 
@@ -48,7 +55,7 @@ router.post(
 router.post(
   "/registerTeacher",
   authMiddleware,
-  checkRole(["school_admin"]),
+ checkPermission('add_teacher'),
   teacherUpload,
   registerTeacher
 );
@@ -57,7 +64,7 @@ router.post(
 router.post(
   "/registerAccountant",
   authMiddleware,
-  checkRole(["school_admin"]),
+ checkPermission('add_accountant'),
   accountantUpload,
   registerAccountant
 );
@@ -67,8 +74,9 @@ router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);
 router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);
 router.post(
   "/createClass",
-  authMiddleware,
-  checkRole(["school_admin"]),
+ authMiddleware,
+ // checkRole(["school_admin"]),
+ checkPermission('manage_classes'),
   createClass
 );
 router.put(

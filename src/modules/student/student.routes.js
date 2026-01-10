@@ -1,19 +1,20 @@
 import express from "express";
 import {
   getStudentDetailsById,
-  updateStudent
 } from "./student.controller.js";
-import { authMiddleware, checkRole } from '../../middlewares/auth.middleware.js';
+import { authMiddleware } from '../../middlewares/auth.middleware.js';
+import {studentUpload} from "../../middlewares/student.multer.js"
+import { teacherUpload } from "../../middlewares/teacher.multer.js";
+import { accountantUpload } from "../../middlewares/accountant.multer.js";
+import { checkPermission } from "../../middlewares/permission.middleware.js";
+
 const router = express.Router();
+
 
 router.get("/getStudentDetailsById/:student_id",getStudentDetailsById)
 
-router.put(
-  '/updateStudent',
-  authMiddleware,
-  checkRole(['school_admin']),
-  updateStudent
-);
+
+
 
 
 
