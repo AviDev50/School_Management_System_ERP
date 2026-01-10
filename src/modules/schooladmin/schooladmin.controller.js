@@ -30,7 +30,6 @@ export async function registerTeacher(req, res) {
   }
 }
 
-//register student with image
 export async function registerStudent(req, res) {
   try {
     const school_id = req.user.school_id;
@@ -91,7 +90,6 @@ export async function registerAccountant(req, res) {
     });
   }
 }
-
 
 export async function getTotalStudentsListBySchoolId(req,res) {
   try {

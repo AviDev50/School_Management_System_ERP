@@ -37,44 +37,67 @@ export async function checkuser_user_emailExistsExcludingUser(user_email, school
   }
 }
 
-export async function updateAccountant(accountant_id, school_id, data) {
-  const connection = await db.getConnection();
+export async function updateStudent(student_id, data, school_id) {
+  const fields = [];
+  const values = [];
 
-  try {
-    const fields = [];
-    const values = [];
-
-    if (data.qualification !== undefined) {
-      fields.push("qualification = ?");
-      values.push(data.qualification);
-    }
-
-    if (fields.length === 0) return null;
-
-    const sql = `UPDATE accountants SET ${fields.join(", ")} WHERE accountant_id = ? AND school_id = ?`;
-    values.push(accountant_id, school_id);
-
-    const [result] = await connection.query(sql, values);
-    
-    if (result.affectedRows === 0) {
-      return null;
-    }
-
-    // Updated record fetch karo with user details
-    const [rows] = await connection.query(
-      `SELECT 
-        a.*,
-        u.name,
-        u.user_email
-      FROM accountants a
-      JOIN users u ON a.user_id = u.user_id
-      WHERE a.accountant_id = ? AND a.school_id = ?`,
-      [accountant_id, school_id]
-    );
-
-    return rows[0];
-
-  } finally {
-    connection.release();
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
   }
+
+  values.push(student_id, school_id);
+
+  const sql = `
+    UPDATE students
+    SET ${fields.join(", ")}
+    WHERE student_id = ? AND school_id = ?
+  `;
+
+  const [result] = await db.query(sql, values);
+  return result;
 }
+
+
+export async function updateTeacher(teacher_id, data, school_id) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(teacher_id, school_id);
+
+  const sql = `
+    UPDATE teachers
+    SET ${fields.join(", ")}
+    WHERE teacher_id = ? AND school_id = ?
+  `;
+
+  const [result] = await db.query(sql, values);
+  return result;
+}
+
+export async function updateAccountant(accountant_id, data, school_id) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(accountant_id, school_id);
+
+  const sql = `
+    UPDATE accountants
+    SET ${fields.join(", ")}
+    WHERE accountant_id = ? AND school_id = ?
+  `;
+
+  const [result] = await db.query(sql, values);
+  return result;
+}
+

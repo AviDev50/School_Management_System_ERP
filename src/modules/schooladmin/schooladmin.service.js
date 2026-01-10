@@ -2,46 +2,32 @@ import db from "../../config/db.js";
 import bcrypt from "bcrypt";
 import * as schoolAdminModel from "./schoolAdmin.model.js";
 
-
 // Common function for all 
-export async function registerUser(data, connection) {
-  try {
- 
-    const checkQuery = `SELECT user_id FROM users WHERE user_email = ? AND school_id = ?`;
+export async function registerUserService(data, connection) {
+  const existing = await schoolAdminModel.findUserByEmailAndSchool(
+    data.user_email,
+    data.school_id,
+    connection
+  );
 
-    const [existing] = await connection.query(
-      checkQuery,
-      [data.user_email, data.school_id]
-    );
-
-    if (existing.length > 0) {
-      console.log("Email exists, throwing error");
-      throw new Error("Email already exists");
-    }
-
-    console.log("Email available, proceeding to insert");
-
-    const [result] = await connection.query(
-      `INSERT INTO users
-       (school_id, name, user_email, password, role)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        data.school_id,
-        data.name,
-        data.user_email,
-        data.password,
-        data.role
-      ]
-    );
-
-    console.log("User inserted with ID:", result.insertId);
-    return result.insertId;
-    
-  } catch (err) {
-    console.error("Error details:", err);
-    throw err;
+  if (existing.length > 0) {
+    throw new Error("Email already exists");
   }
+
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+
+  const userData = {
+    school_id: data.school_id,
+    name: data.name,
+    user_email: data.user_email,
+    password: hashedPassword,
+    role: data.role
+  };
+
+  return await schoolAdminModel.insertUser(userData, connection);
 }
+
 
 export async function registerTeacherService(data) {
   const connection = await db.getConnection();
@@ -60,7 +46,7 @@ export async function registerTeacherService(data) {
       aadhar_card
     } = data;
 
-    const user_id = await registerUser(
+    const user_id = await registerUserService(
       {
         name,
         user_email,
@@ -115,7 +101,7 @@ export async function registerStudentService(data) {
       mother_photo
     } = data;
 
-    const user_id = await registerUser(
+    const user_id = await registerUserService(
       {
         name,
         user_email,

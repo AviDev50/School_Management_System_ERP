@@ -3,8 +3,6 @@ import db from "../../config/db.js";
 import bcrypt from 'bcrypt';
 import * as studentModel from './student.model.js';
 
-
-
 export async function getStudentByIdService(params, req) {
   const { student_id } = params;
 
@@ -36,19 +34,3 @@ export async function getStudentByIdService(params, req) {
   };
 }
 
-
-export async function updateStudentService(student_id, school_id, data) {
-  console.log(student_id, school_id);
-  
-  const updatedStudent = await studentModel.updateStudent(
-    student_id,
-    school_id,
-    data
-  );
-
-  if (!updatedStudent) {
-    throw new Error("Student not found or no changes made");
-  }
-
-  return updatedStudent;
-}
