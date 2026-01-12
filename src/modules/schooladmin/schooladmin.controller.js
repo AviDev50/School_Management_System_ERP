@@ -91,21 +91,76 @@ export async function registerAccountant(req, res) {
   }
 }
 
-export async function getTotalStudentsListBySchoolId(req,res) {
+export async function getTotalStudentsListBySchoolId(req, res) {
   try {
-    const result = await schoolAdminService.getTotalStudentsListService(req.body);
-    return res.status(201).json({success: true, message: "All Students list get successfully",data:[result]})
+    const school_id = req.user.school_id;  // come from Auth middleware se milega
+    const { page, limit } = req.query; 
+    
+    const result = await schoolAdminService.getTotalStudentsListService({
+      school_id,
+      page,
+      limit
+    },req);
+    
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(400).json({ success: false, message: error.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 }
 
-export async function getTotalTeachersListBySchoolId(req,res) {
-  try{const result = await schoolAdminService.getTotalTeachersListService(req.body);
-  return res.status(201).json({success:true,message:"All teachers details get successfully",data:[result]})
-} catch(error){
-  return res.status(400).json({success: false, message: error.message});
+export async function getTotalTeachersListBySchoolId(req, res) {
+  try {
+    const school_id = req.user.school_id; 
+    const { page, limit } = req.query;     
+    
+    const result = await schoolAdminService.getTotalTeachersListService({
+      school_id,
+      page,
+      limit
+    },req);
+    
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    
+    return res.status(200).json(result); 
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
 }
+
+export async function getTotalAccountantsListBySchoolId(req, res) {
+  try {
+    const school_id = req.user.school_id;  
+    const { page, limit } = req.query;  
+    
+    const result = await schoolAdminService.getTotalAccountantsListService({
+      school_id,
+      page,
+      limit
+    },req);
+    
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+    
+    return res.status(200).json(result); 
+  } catch (error) {
+    return res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
 }
 
 export async function addNewClass(req,res) {
@@ -522,6 +577,103 @@ export async function deleteStudentAttendance(req, res) {
     res.json({ message: "Attendance deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+}
+
+export async function getStudentById(req, res) {
+  try {
+    const { student_id } = req.params;
+    const school_id = req.user.school_id;
+       if (!student_id) {
+      return res.status(400).json({
+        success: false,
+        message: "student_id must be a valid positive number"
+      });
+    }
+
+    const data = await schoolAdminService.getStudentByIdService(
+      student_id,
+      school_id,
+      req
+    );
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+export async function getTeacherById(req, res) {
+  try {
+    const { teacher_id } = req.params;
+    const school_id = req.user.school_id;
+
+    const data = await schoolAdminService.getTeacherByIdService(
+      teacher_id,
+      school_id,
+      req
+    );
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+export async function getAccountantById(req, res) {
+  try {
+    const { accountant_id } = req.params;
+    const school_id = req.user.school_id;
+
+    const data = await schoolAdminService.getAccountantByIdService(
+      accountant_id,
+      school_id,
+      req
+    );
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        message: "Accountant not found"
+      });
+    }
+
+    return res.json({
+      success: true,
+      data
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 }
 
