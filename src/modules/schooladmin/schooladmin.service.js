@@ -1,6 +1,6 @@
 import db from "../../config/db.js";
 import bcrypt from "bcrypt";
-import * as schoolAdminModel from "./schoolAdmin.model.js";
+import * as schoolAdminModel from "./schooladmin.model.js";
 
 // Common function for all 
 export async function registerUserService(data, connection) {
@@ -189,79 +189,168 @@ export async function registerAccountantService(data) {
   }
 }
 
-export async function getTotalStudentsListService(data) {
-  try {
-    const { school_id, page = 1, limit = 10 } = data;
+export async function getTotalStudentsListService(data, req) {
+  const { school_id, page = 1, limit = 10 } = data;
 
-    if (!school_id) {
-      return {
-        success: false,
-        message: "School ID is required",
-      };
-    }
-
-    const offset = (page - 1) * limit;
-
-    const result = await schoolAdminModel.getStudentsList({
-      school_id,
-      limit: Number(limit),
-      offset,
-    });
-
-    const totalCount = await schoolAdminModel.getTotalStudentsCount(school_id);
-
-    return {
-      success: true,
-      message: "Students list fetched successfully",
-      data: result,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-      },
-    };
-  } catch (error) {
-    console.error("Service Error:", error);
-    return {
-      success: false,
-      message: "Something went wrong while fetching students",
-    };
+  if (!school_id || isNaN(school_id)) {
+    throw new Error("Valid school_id is required");
   }
+
+  const offset = (page - 1) * limit;
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  const result = await schoolAdminModel.getStudentsList({
+    school_id,
+    limit: Number(limit),
+    offset,
+  });
+
+  const mappedResult = result.map(row => {
+    const {
+      student_photo,
+      father_photo,
+      mother_photo,
+      aadhar_card,
+      ...safeData
+    } = row;
+
+    return {
+      ...safeData,
+
+      student_photo_url: student_photo
+        ? `${baseUrl}/${student_photo.replace(/\\/g, "/")}`
+        : null,
+
+      father_photo_url: father_photo
+        ? `${baseUrl}/${father_photo.replace(/\\/g, "/")}`
+        : null,
+
+      mother_photo_url: mother_photo
+        ? `${baseUrl}/${mother_photo.replace(/\\/g, "/")}`
+        : null,
+
+      aadhar_card_url: aadhar_card
+        ? `${baseUrl}/${aadhar_card.replace(/\\/g, "/")}`
+        : null
+    };
+  });
+
+  const totalCount = await schoolAdminModel.getTotalStudentsCount(school_id);
+
+  return {
+    success: true,
+    message: "Students list fetched successfully",
+    data: mappedResult,
+    pagination: {
+      page: Number(page),
+      limit: Number(limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    },
+  };
 }
 
 //added pagination here
-export async function getTotalTeachersListService(data) {
-  try{
-  const {school_id,page = 1, limit = 10} = data
+export async function getTotalTeachersListService(data, req) {
+  const { school_id, page = 1, limit = 10 } = data;
 
-  const offset = (page-1) * limit
+  if (!school_id || isNaN(school_id)) {
+    throw new Error("Valid school_id is required");
+  }
+
+  const offset = (page - 1) * limit;
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
 
   const result = await schoolAdminModel.getTeachersList({
     school_id,
-    limit:Number(limit),
-    offset
-  })
+    limit: Number(limit),
+    offset,
+  });
 
-   const totalCount = await schoolAdminModel.getTotalTeachersCount(school_id);
- return {
-      success: true,
-      message: "Teachers list fetched successfully",
-      data: result,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-      },
-    };
-  } catch (error) {
-    console.error("Service Error:", error);
+  const mappedResult = result.map(row => {
+    const {
+      teacher_photo,
+      aadhar_card,
+      ...safeData
+    } = row;
+
     return {
-      success: false,
-      message: "Something went wrong while fetching students",
+      ...safeData,
+
+      teacher_photo_url: teacher_photo
+        ? `${baseUrl}/${teacher_photo.replace(/\\/g, "/")}`
+        : null,
+
+      aadhar_card_url: aadhar_card
+        ? `${baseUrl}/${aadhar_card.replace(/\\/g, "/")}`
+        : null
     };
+  });
+
+  const totalCount = await schoolAdminModel.getTotalTeachersCount(school_id);
+
+  return {
+    success: true,
+    message: "Teachers list fetched successfully",
+    data: mappedResult,
+    pagination: {
+      page: Number(page),
+      limit: Number(limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    },
+  };
+}
+
+export async function getTotalAccountantsListService(data, req) {
+  const { school_id, page = 1, limit = 10 } = data;
+
+  if (!school_id || isNaN(school_id)) {
+    throw new Error("Valid school_id is required");
   }
+
+  const offset = (page - 1) * limit;
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  const result = await schoolAdminModel.getAccountantsList({
+    school_id,
+    limit: Number(limit),
+    offset,
+  });
+
+  const mappedResult = result.map(row => {
+    const {
+      accountant_photo,
+      aadhar_card,
+      ...safeData
+    } = row;
+
+    return {
+      ...safeData,
+
+      accountant_photo_url: accountant_photo
+        ? `${baseUrl}/${accountant_photo.replace(/\\/g, "/")}`
+        : null,
+
+      aadhar_card_url: aadhar_card
+        ? `${baseUrl}/${aadhar_card.replace(/\\/g, "/")}`
+        : null
+    };
+  });
+
+  const totalCount = await schoolAdminModel.getTotalAccountantsCount(school_id);
+
+  return {
+    success: true,
+    message: "Accountants list fetched successfully",
+    data: mappedResult,
+    pagination: {
+      page: Number(page),
+      limit: Number(limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+    },
+  };
 }
 
 export async function createClassService(school_id, data) {
@@ -367,5 +456,105 @@ export async function deleteAttendanceService(attendance_id, school_id) {
   );
 }
 
+export async function getStudentByIdService(student_id, school_id, req) {
+
+  const result = await schoolAdminModel.getStudentById(
+    student_id,
+    school_id
+  );
+
+  if (!result.length) return null;
+
+  const row = result[0];
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  const {
+    student_photo,
+    father_photo,
+    mother_photo,
+    aadhar_card,
+    ...safeData
+  } = row;
+
+  return {
+    ...safeData,
+
+    student_photo_url: student_photo
+      ? `${baseUrl}/${student_photo.replace(/\\/g, "/")}`
+      : null,
+
+    father_photo_url: father_photo
+      ? `${baseUrl}/${father_photo.replace(/\\/g, "/")}`
+      : null,
+
+    mother_photo_url: mother_photo
+      ? `${baseUrl}/${mother_photo.replace(/\\/g, "/")}`
+      : null,
+
+    aadhar_card_url: aadhar_card
+      ? `${baseUrl}/${aadhar_card.replace(/\\/g, "/")}`
+      : null
+  };
+}
+
+export async function getTeacherByIdService(teacher_id, school_id, req) {
+  const result = await schoolAdminModel.getTeacherById(
+    teacher_id,
+    school_id
+  );
+
+  if (!result.length) return null;
+
+  const row = result[0];
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  const {
+    teacher_photo,
+    aadhar_card,
+    ...safeData
+  } = row;
+
+  return {
+    ...safeData,
+
+    teacher_photo_url: teacher_photo
+      ? `${baseUrl}/${teacher_photo.replace(/\\/g, "/")}`
+      : null,
+
+    aadhar_card_url: aadhar_card
+      ? `${baseUrl}/${aadhar_card.replace(/\\/g, "/")}`
+      : null
+  };
+}
+
+export async function getAccountantByIdService(accountant_id, school_id, req) {
+  const result = await schoolAdminModel.getAccountantById(
+    accountant_id,
+    school_id
+  );
+
+  if (!result.length) return null;
+
+  const row = result[0];
+  const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+  const {
+    accountant_photo,
+    aadhar_card,
+    ...safeData
+  } = row;
+
+  return {
+    ...safeData,
+
+    accountant_photo_url: accountant_photo
+      ? `${baseUrl}/${accountant_photo.replace(/\\/g, "/")}`
+      : null,
+
+    aadhar_card_url: aadhar_card
+      ? `${baseUrl}/${aadhar_card.replace(/\\/g, "/")}`
+      : null
+  };
+}
 
 

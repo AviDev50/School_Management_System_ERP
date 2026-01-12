@@ -98,20 +98,28 @@ export async function getStudentsList({ school_id, limit, offset }) {
       SELECT 
         u.user_id,
         u.name,
-        u.user_email,
+        u.user_email,              
         u.status,
         s.school_id,
         s.admission_no,
         s.gender,
         s.class_id,
         s.section_id,
-        s.student_id
+        s.student_id,
+        c.class_name,         
+        sec.section_name,
+        s.student_photo,
+        s.aadhar_card,
+        s.father_photo,
+        s.mother_photo   
       FROM users u
-      JOIN students s on s.user_id = u.user_id
+      JOIN students s ON s.user_id = u.user_id
+      LEFT JOIN classes c ON c.class_id = s.class_id
+      LEFT JOIN sections sec ON sec.section_id = s.section_id
       WHERE u.school_id = ?
         AND u.role = 'student'
         AND u.status = 1
-      ORDER BY u.user_id DESC
+      ORDER BY u.created_at DESC
       LIMIT ? OFFSET ?`,
       [school_id, limit, offset]
     );
@@ -142,6 +150,7 @@ export async function getTotalStudentsCount(school_id) {
   }
 }
 
+
 export async function getTeachersList({ school_id, limit, offset }) {
   const connection = await db.getConnection();
   try {
@@ -152,18 +161,19 @@ export async function getTeachersList({ school_id, limit, offset }) {
         u.name,
         u.user_email,
         u.status,
-        t.school_id,
         t.teacher_id,
+        t.school_id,
         t.qualification,
         t.experience_years,
         t.joining_date,
-        t.status
+        t.teacher_photo,
+        t.aadhar_card
       FROM users u
-      JOIN teachers t on t.user_id = u.user_id
+      JOIN teachers t ON t.user_id = u.user_id
       WHERE u.school_id = ?
         AND u.role = 'teacher'
         AND u.status = 1
-      ORDER BY u.user_id DESC
+      ORDER BY u.created_at DESC
       LIMIT ? OFFSET ?`,
       [school_id, limit, offset]
     );
@@ -183,6 +193,54 @@ export async function getTotalTeachersCount(school_id) {
       FROM users
       WHERE school_id = ?
         AND role = 'teacher'
+        AND status = 1
+      `,
+      [school_id]
+    );
+
+    return result.total;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getAccountantsList({ school_id, limit, offset }) {
+  const connection = await db.getConnection();
+  try {
+    const [rows] = await connection.query(
+      ` SELECT 
+        u.name,
+        u.user_email,
+        u.status,
+        a.accountant_id,
+        a.qualification,
+        a.accountant_photo,
+        a.aadhar_card
+      FROM users u
+      JOIN accountants a ON a.user_id = u.user_id
+      WHERE u.school_id = ?
+        AND u.role = 'accountant'
+        AND u.status = 1
+      ORDER BY u.created_at DESC
+      LIMIT ? OFFSET ?`,
+      [school_id, limit, offset]
+    );
+
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getTotalAccountantsCount(school_id) {
+  const connection = await db.getConnection();
+  try {
+    const [[result]] = await connection.query(
+      `
+      SELECT COUNT(*) AS total
+      FROM users
+      WHERE school_id = ?
+        AND role = 'accountant'
         AND status = 1
       `,
       [school_id]
@@ -553,6 +611,62 @@ export async function deleteAttendance(attendance_id, school_id) {
   await db.query(sql, [attendance_id, school_id]);
 }
 
+export async function getStudentById(student_id, school_id) {
+  const connection = await db.getConnection()
+  
+  const query = `
+    SELECT 
+      s.*,
+      u.name,
+      u.user_email
+    FROM students s
+    JOIN users u ON u.user_id = s.user_id
+    WHERE s.student_id = ? AND s.school_id = ?
+  `;
+
+  const [result] = await connection.query(query, [
+    student_id,
+    school_id
+  ]);
+
+  return result;
+}
+
+export async function getTeacherById(teacher_id, school_id) {
+  const connection = await db.getConnection()
+  const query = `
+    SELECT 
+      t.*,
+      u.name,
+      u.user_email
+    FROM teachers t
+    JOIN users u ON u.user_id = t.user_id
+    WHERE t.teacher_id = ? AND t.school_id = ?
+  `;
+
+  const [result] = await connection.query(query, [
+    teacher_id,
+    school_id
+  ]);
+
+  return result;
+}
+
+export async function getAccountantById(accountant_id, school_id) {
+  const connection = await db.getConnection()
+  const query = `
+    SELECT *
+    FROM accountants
+    WHERE accountant_id = ? AND school_id = ?
+  `;
+
+  const [result] = await connection.query(query, [
+    accountant_id,
+    school_id
+  ]);
+
+  return result;
+}
 
 
 

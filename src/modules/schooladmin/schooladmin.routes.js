@@ -5,6 +5,7 @@ import {
   registerAccountant,
   getTotalStudentsListBySchoolId,
   getTotalTeachersListBySchoolId,
+  getTotalAccountantsListBySchoolId,
   createClass,
   updateClass,
   getAllClasses,
@@ -24,7 +25,10 @@ import {
   createStudentAttendance,
   updateStudentAttendance,
   getStudentAttendance,
-  deleteStudentAttendance
+  deleteStudentAttendance,
+  getStudentById,
+  getTeacherById,
+  getAccountantById,
 } from "./schooladmin.controller.js";
 import {
   authMiddleware,
@@ -64,148 +68,163 @@ router.post(
 router.post(
   "/registerAccountant",
   authMiddleware,
- checkPermission('add_accountant'),
+  checkPermission('add_accountant'),
   accountantUpload,
   registerAccountant
 );
 
-router.post("/getTotalStudentsListBySchoolId", getTotalStudentsListBySchoolId);
-router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);
-router.post("/getTotalTeachersListBySchoolId", getTotalTeachersListBySchoolId);
+router.get("/getTotalStudentsListBySchoolId",authMiddleware,
+ checkPermission('view_students'),getTotalStudentsListBySchoolId);
+
+router.get("/getTotalTeachersListBySchoolId",authMiddleware,
+ checkPermission('view_teachers'),getTotalTeachersListBySchoolId);
+
+ router.get("/getTotalAccountantsListBySchoolId",authMiddleware,
+ checkPermission('view_accountants'),getTotalAccountantsListBySchoolId);
+
+ router.get("/getStudentById/:student_id",authMiddleware,
+ checkPermission('view_students'),getStudentById);
+
+ router.get("/getTeacherById/:teacher_id",authMiddleware,
+ checkPermission('view_students'),getTeacherById);
+
+ router.get("/getAccountantById/:accountant_id",authMiddleware,
+ checkPermission('view_students'),getAccountantById);
+
 router.post(
   "/createClass",
  authMiddleware,
- // checkRole(["school_admin"]),
  checkPermission('manage_classes'),
   createClass
 );
+
 router.put(
   "/updateClass",
   authMiddleware,
   checkRole(["school_admin"]),
   updateClass
 );
+
 router.get(
   "/getAllClasses",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   getAllClasses
 );
 router.delete(
   "/deleteClass",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   deleteClass
 );
 router.post(
   "/createSection",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   createSection
 );
 router.put(
   "/updateSection",
   authMiddleware,
-  checkRole(["school_admin"]),
+ checkPermission('manage_classes'),
   updateSection
 );
 
 router.get(
   "/getAllSections",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   getAllSections
 );
 
 router.delete(
   "/deleteSection",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   deleteSection
 );
 
 router.post(
   "/createSubject",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   createSubject
 );
 
 router.put(
   "/updateSubject",
   authMiddleware,
-  checkRole(["school_admin"]),
+ checkPermission('manage_classes'),
   updateSubject
 );
 
 router.get(
   "/getAllSubjects",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   getAllSubjects
 );
 
 router.delete(
   "/deleteSubject",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   deleteSubject
 );
 
 router.post(
   "/createTimetable",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   createTimetable
 );
 
 router.put(
   "/updateTimetable",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   updateTimetable
 );
 
 router.get(
   "/getTimetable/:class_id/:section_id",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   getTimetable
 );
 
 router.delete(
   "/deleteTimetable",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   deleteTimetable
 );
 
 router.post(
   "/createStudentAttendance",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   createStudentAttendance
 );
 
 router.put(
   "/updateStudentAttendance",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   updateStudentAttendance
 );
 
 router.get(
   "/getStudentAttendance/:class_id/:section_id",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   getStudentAttendance
 );
-
 
 router.delete(
   "/deleteStudentAttendance",
   authMiddleware,
-  checkRole(["school_admin"]),
+  checkPermission('manage_classes'),
   deleteStudentAttendance
 );
 
