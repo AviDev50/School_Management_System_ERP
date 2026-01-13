@@ -557,4 +557,116 @@ export async function getAccountantByIdService(accountant_id, school_id, req) {
   };
 }
 
+export async function createFeeService(data) {
+  const {
+    school_id,
+    class_id,
+    fee_type,
+    amount,
+    academic_year,
+    status = 1
+  } = data;
 
+  if (Number(amount) <= 0) {
+    throw new Error("Amount must be greater than zero");
+  }
+
+  const insertResult = await schoolAdminModel.insertFee({
+    school_id,
+    class_id,
+    fee_type,
+    amount,
+    academic_year,
+    status
+  });
+
+  return {
+    fee_id: insertResult.insertId,
+    school_id,
+    class_id,
+    fee_type,
+    amount,
+    academic_year,
+    status
+  };
+}
+
+export async function getFeesService(filters) {
+  const {
+    school_id,
+    class_id,
+    academic_year,
+    status,
+    page,
+    limit
+  } = filters;
+
+  const offset = Number((page - 1) * limit);
+
+  const [rows, total] = await Promise.all([
+    schoolAdminModel.getFeesList({
+      school_id,
+      class_id,
+      academic_year,
+      status,
+      limit: Number(limit),
+      offset
+    }),
+    schoolAdminModel.getFeesCount({
+      school_id,
+      class_id,
+      academic_year,
+      status
+    })
+  ]);
+
+  return {
+    data: rows,
+    pagination: {
+      page,
+      limit,
+      total_records: total,
+      total_pages: Math.ceil(total / limit)
+    }
+  };
+}
+
+//here we uses new way payload filtering fields
+export async function updateFeeService(data) {
+  const { fee_id, school_id, ...rest } = data;
+
+  // here we remove undefined fields
+  const payload = Object.fromEntries(
+    Object.entries(rest).filter(([_, v]) => v !== undefined)
+  );
+
+  if (Object.keys(payload).length === 0) {
+    throw new Error("Nothing to update");
+  }
+
+  if (payload.amount !== undefined && Number(payload.amount) <= 0) {
+    throw new Error("Amount must be greater than zero");
+  }
+
+  await schoolAdminModel.updateFee(fee_id, school_id, payload);
+
+  return {
+    fee_id,
+    ...payload
+  };
+}
+
+export async function deleteFeeService(fee_id, school_id) {
+
+  const fee = await schoolAdminModel.getFeeById(fee_id, school_id);
+
+  if (!fee) {
+    throw new Error("Fee not found");
+  }
+
+  if (fee.status === 0) {
+    throw new Error("Fee already deleted");
+  }
+
+  await schoolAdminModel.softDeleteFee(fee_id, school_id);
+}

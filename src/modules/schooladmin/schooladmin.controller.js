@@ -677,6 +677,183 @@ export async function getAccountantById(req, res) {
   }
 }
 
+export async function createFee(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const {
+      class_id,
+      fee_type,
+      amount,
+      academic_year,
+      status
+    } = req.body;
+
+    if (!class_id || !fee_type || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: "class_id, fee_type and amount are required"
+      });
+    }
+
+    const result = await schoolAdminService.createFeeService({
+      school_id,
+      class_id,
+      fee_type,
+      amount,
+      academic_year,
+      status
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Fee created successfully",
+      data: result
+    });
+
+  } catch (error) {
+    console.error("Create Fee Error:", error.message);
+
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({
+        success: false,
+        message: "Fee already exists for this class and academic year"
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+}
+
+export async function getFees(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    let {
+      class_id,
+      academic_year,
+      status,
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    page = Number(page) || 1;
+    limit = Number(limit) || 10;
+
+    if (status !== undefined) {
+      status = Number(status);
+    }
+
+    const result = await schoolAdminService.getFeesService({
+      school_id,
+      class_id,
+      academic_year,
+      status,
+      page,
+      limit
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Fees fetched successfully",
+      data: result.data,
+      pagination: result.pagination
+    });
+
+  } catch (error) {
+    console.error("Get Fees Error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+}
+
+export async function updateFeeById(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { fee_id } = req.body;
+
+    const {
+      class_id,
+      fee_type,
+      amount,
+      academic_year,
+      status
+    } = req.body;
+
+    if (!fee_id) {
+      return res.status(400).json({
+        success: false,
+        message: "fee_id is required"
+      });
+    }
+
+    const result = await schoolAdminService.updateFeeService({
+      fee_id,
+      school_id,
+      class_id,
+      fee_type,
+      amount,
+      academic_year,
+      status
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Fee updated successfully",
+      data: result
+    });
+
+  } catch (error) {
+    console.error("Update Fee Error:", error.message);
+
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(409).json({
+        success: false,
+        message: "Duplicate fee exists for this class and academic year"
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error"
+    });
+  }
+}
+
+export async function deleteFeeById(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { fee_id } = req.body;
+
+    if (!fee_id) {
+      return res.status(400).json({
+        success: false,
+        message: "fee_id is required"
+      });
+    }
+
+    await schoolAdminService.deleteFeeService(fee_id, school_id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Fee deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Delete Fee Error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error"
+    });
+  }
+}
+
 
 
 
