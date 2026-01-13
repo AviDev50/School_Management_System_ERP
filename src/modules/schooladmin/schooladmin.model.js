@@ -668,6 +668,159 @@ export async function getAccountantById(accountant_id, school_id) {
   return result;
 }
 
+export async function insertFee(data) {
+  const {
+    school_id,
+    class_id,
+    fee_type,
+    amount,
+    academic_year,
+    status
+  } = data;
+
+  const sql = `
+    INSERT INTO fees
+    (school_id, class_id, fee_type, amount, academic_year, status)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  const [result] = await db.execute(sql, [
+    school_id,
+    class_id,
+    fee_type,
+    amount,
+    academic_year || null,
+    status
+  ]);
+
+  return result;
+}
+
+export async function getFeesList(filters) {
+  const {
+    school_id,
+    class_id,
+    academic_year,
+    status,
+    limit,
+    offset
+  } = filters;
+
+  let sql = `
+    SELECT
+      f.fee_id,
+      f.school_id,
+      f.class_id,
+      c.class_name,
+      f.fee_type,
+      f.amount,
+      f.academic_year,
+      f.status,
+      f.created_at
+    FROM fees f
+    JOIN classes c ON c.class_id = f.class_id
+    WHERE f.school_id = ?
+  `;
+
+  const params = [Number(school_id)];
+
+  if (class_id) {
+    sql += " AND f.class_id = ?";
+    params.push(Number(class_id));
+  }
+
+  if (academic_year) {
+    sql += " AND f.academic_year = ?";
+    params.push(academic_year);
+  }
+
+  if (status !== undefined && !Number.isNaN(status)) {
+    sql += " AND f.status = ?";
+    params.push(Number(status));
+  }
+
+  sql += ` ORDER BY f.created_at DESC LIMIT ${Number(limit)} OFFSET ${Number(offset)}`;
+
+  const [rows] = await db.execute(sql, params);
+  return rows;
+}
+
+export async function getFeesCount(filters) {
+  const {
+    school_id,
+    class_id,
+    academic_year,
+    status
+  } = filters;
+
+  let sql = `
+    SELECT COUNT(*) AS total
+    FROM fees
+    WHERE school_id = ?
+  `;
+
+  const params = [school_id];
+
+  if (class_id) {
+    sql += " AND class_id = ?";
+    params.push(class_id);
+  }
+
+  if (academic_year) {
+    sql += " AND academic_year = ?";
+    params.push(academic_year);
+  }
+
+  if (status !== undefined) {
+    sql += " AND status = ?";
+    params.push(status);
+  }
+
+  const [rows] = await db.execute(sql, params);
+  return rows[0].total;
+}
+
+export async function updateFee(fee_id, school_id, payload) {
+  const sql = `
+    UPDATE fees
+    SET ?
+    WHERE fee_id = ? AND school_id = ?
+  `;
+
+  await db.query(sql, [
+    payload,
+    Number(fee_id),
+    Number(school_id)
+  ]);
+}
+
+export async function softDeleteFee(fee_id, school_id) {
+  const sql = `
+    UPDATE fees
+    SET status = 0
+    WHERE fee_id = ? AND school_id = ?
+  `;
+
+  await db.execute(sql, [
+    Number(fee_id),
+    Number(school_id)
+  ]);
+}
+
+export async function getFeeById(fee_id, school_id) {
+  const sql = `
+    SELECT *
+    FROM fees
+    WHERE fee_id = ? AND school_id = ?
+  `;
+
+  const [rows] = await db.execute(sql, [
+    Number(fee_id),
+    Number(school_id)
+  ]);
+
+  return rows[0];
+}
 
 
 
