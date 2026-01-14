@@ -822,6 +822,239 @@ export async function getFeeById(fee_id, school_id) {
   return rows[0];
 }
 
+//here we get old image path
+export async function getStudentPhotosById(student_id, school_id, connection) {
+  const [rows] = await connection.query(
+    `SELECT student_photo, aadhar_card, father_photo, mother_photo
+     FROM students
+     WHERE student_id = ? AND school_id = ?`,
+    [student_id, school_id]
+  );
 
+  return rows[0];
+}
 
+export async function updateUserByStudentId(student_id, school_id, data, connection) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(student_id, school_id);
+
+  const sql = `
+    UPDATE users u
+    JOIN students s ON s.user_id = u.user_id
+    SET ${fields.join(", ")}
+    WHERE s.student_id = ? AND s.school_id = ?
+  `;
+
+  await connection.query(sql, values);
+}
+
+export async function updateStudentById(student_id, school_id, data, connection) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(student_id, school_id);
+
+  const sql = `
+    UPDATE students
+    SET ${fields.join(", ")}
+    WHERE student_id = ? AND school_id = ?
+  `;
+
+  await connection.query(sql, values);
+}
+
+export async function getTeacherPhotosById(teacher_id, school_id, connection) {
+  const [rows] = await connection.query(
+    `SELECT teacher_photo, aadhar_card
+     FROM teachers
+     WHERE teacher_id = ? AND school_id = ?`,
+    [teacher_id, school_id]
+  );
+  return rows[0];
+}
+
+export async function updateUserByTeacherId(
+  teacher_id,
+  school_id,
+  data,
+  connection
+) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(teacher_id, school_id);
+
+  const sql = `
+    UPDATE users u
+    JOIN teachers t ON t.user_id = u.user_id
+    SET ${fields.join(", ")}
+    WHERE t.teacher_id = ? AND t.school_id = ?
+  `;
+
+  await connection.query(sql, values);
+}
+
+export async function updateTeacherById(
+  teacher_id,
+  school_id,
+  data,
+  connection
+) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(teacher_id, school_id);
+
+  const sql = `
+    UPDATE teachers
+    SET ${fields.join(", ")}
+    WHERE teacher_id = ? AND school_id = ?
+  `;
+
+  await connection.query(sql, values);
+}
+
+export async function getAccountantPhotosById(accountant_id, school_id, connection) {
+  const [rows] = await connection.query(
+    `SELECT accountant_photo, aadhar_card
+     FROM accountants
+     WHERE accountant_id = ? AND school_id = ?`,
+    [accountant_id, school_id]
+  );
+  return rows[0];
+}
+
+export async function updateUserByAccountantId(
+  accountant_id,
+  school_id,
+  data,
+  connection
+) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(accountant_id, school_id);
+
+  const sql = `
+    UPDATE users u
+    JOIN accountants a ON a.user_id = u.user_id
+    SET ${fields.join(", ")}
+    WHERE a.accountant_id = ? AND a.school_id = ?
+  `;
+
+  await connection.query(sql, values);
+}
+
+export async function updateAccountantById(
+  accountant_id,
+  school_id,
+  data,
+  connection
+) {
+  const fields = [];
+  const values = [];
+
+  for (const key in data) {
+    fields.push(`${key} = ?`);
+    values.push(data[key]);
+  }
+
+  values.push(accountant_id, school_id);
+
+  const sql = `
+    UPDATE accountants
+    SET ${fields.join(", ")}
+    WHERE accountant_id = ? AND school_id = ?
+  `;
+
+  await connection.query(sql, values);
+}
+
+export async function softDeleteStudent(student_id, school_id, connection) {
+  await connection.query(
+    `UPDATE students
+     SET status = 0
+     WHERE student_id = ? AND school_id = ?`,
+    [student_id, school_id]
+  );
+}
+
+export async function softDeleteUserByStudentId(student_id, school_id, connection) {
+  await connection.query(
+    `UPDATE users u
+     JOIN students s ON s.user_id = u.user_id
+     SET u.status = 0
+     WHERE s.student_id = ? AND s.school_id = ?`,
+    [student_id, school_id]
+  );
+}
+
+export async function softDeleteTeacher(teacher_id, school_id, connection) {
+  await connection.query(
+    `UPDATE teachers
+     SET status = 0
+     WHERE teacher_id = ? AND school_id = ?`,
+    [teacher_id, school_id]
+  );
+}
+
+export async function softDeleteUserByTeacherId(teacher_id, school_id, connection) {
+  await connection.query(
+    `UPDATE users u
+     JOIN teachers t ON t.user_id = u.user_id
+     SET u.status = 0
+     WHERE t.teacher_id = ? AND t.school_id = ?`,
+    [teacher_id, school_id]
+  );
+}
+
+export async function softDeleteAccountant(accountant_id, school_id, connection) {
+  await connection.query(
+    `UPDATE accountants
+     SET status = 0
+     WHERE accountant_id = ? AND school_id = ?`,
+    [accountant_id, school_id]
+  );
+}
+
+export async function softDeleteUserByAccountantId(
+  accountant_id,
+  school_id,
+  connection
+) {
+  await connection.query(
+    `UPDATE users u
+     JOIN accountants a ON a.user_id = u.user_id
+     SET u.status = 0
+     WHERE a.accountant_id = ? AND a.school_id = ?`,
+    [accountant_id, school_id]
+  );
+}
 

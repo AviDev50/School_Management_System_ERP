@@ -12,16 +12,15 @@ import { checkPermission } from "../../middlewares/permission.middleware.js";
 const router = express.Router();
 
 router.put(
-  "/updateStudent/:student_id",
+  "/updateStudent",
   authMiddleware,
   checkPermission("edit_student"),
   studentUpload,
   updateStudent
 );
 
-
 router.put(
-  "/updateTeacher/:teacher_id",
+  "/updateTeacher",
   authMiddleware,
   checkPermission("edit_teacher"),
   teacherUpload,
@@ -29,7 +28,7 @@ router.put(
 );
 
 router.put(
-  "/updateAccountant/:accountant_id",
+  "/updateAccountant",
   authMiddleware,
   checkPermission("edit_accountant"),
   accountantUpload,

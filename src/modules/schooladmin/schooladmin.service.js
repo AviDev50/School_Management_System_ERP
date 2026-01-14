@@ -1,3 +1,4 @@
+import fs from "fs";
 import db from "../../config/db.js";
 import bcrypt from "bcrypt";
 import * as schoolAdminModel from "./schooladmin.model.js";
@@ -27,7 +28,6 @@ export async function registerUserService(data, connection) {
 
   return await schoolAdminModel.insertUser(userData, connection);
 }
-
 
 export async function registerTeacherService(data) {
   const connection = await db.getConnection();
@@ -138,7 +138,6 @@ export async function registerStudentService(data) {
     connection.release();
   }
 }
-
 
 export async function registerAccountantService(data) {
   const connection = await db.getConnection();
@@ -635,7 +634,7 @@ export async function getFeesService(filters) {
 export async function updateFeeService(data) {
   const { fee_id, school_id, ...rest } = data;
 
-  // here we remove undefined fields
+  // here we remove all undefined fields using filter means if any field data not sent from frontend then we don't take that 
   const payload = Object.fromEntries(
     Object.entries(rest).filter(([_, v]) => v !== undefined)
   );
@@ -670,3 +669,363 @@ export async function deleteFeeService(fee_id, school_id) {
 
   await schoolAdminModel.softDeleteFee(fee_id, school_id);
 }
+
+export async function updateStudentService(data) {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      student_id,
+      school_id,
+
+      // user fields
+      name,
+      user_email,
+      password,
+
+      // student fields
+      admission_no,
+      gender,
+      class_id,
+      section_id,
+
+      // photos
+      student_photo,
+      aadhar_card,
+      father_photo,
+      mother_photo
+    } = data;
+
+    //here we get old image
+    const oldPhotos = await schoolAdminModel.getStudentPhotosById(
+      student_id,
+      school_id,
+      connection
+    );
+
+    //here we update user
+    const userUpdateData = {};
+    if (name) userUpdateData.name = name;
+    if (user_email) userUpdateData.email = user_email;
+    if (password) {
+      userUpdateData.password = await bcrypt.hash(password, 10);
+    }
+
+    if (Object.keys(userUpdateData).length > 0) {
+      await schoolAdminModel.updateUserByStudentId(
+        student_id,
+        school_id,
+        userUpdateData,
+        connection
+      );
+    }
+
+    //here we update student
+    const studentUpdateData = {};
+    if (admission_no) studentUpdateData.admission_no = admission_no;
+    if (gender) studentUpdateData.gender = gender;
+    if (class_id) studentUpdateData.class_id = class_id;
+    if (section_id) studentUpdateData.section_id = section_id;
+
+    if (student_photo) studentUpdateData.student_photo = student_photo;
+    if (aadhar_card) studentUpdateData.aadhar_card = aadhar_card;
+    if (father_photo) studentUpdateData.father_photo = father_photo;
+    if (mother_photo) studentUpdateData.mother_photo = mother_photo;
+
+    if (Object.keys(studentUpdateData).length > 0) {
+      await schoolAdminModel.updateStudentById(
+        student_id,
+        school_id,
+        studentUpdateData,
+        connection
+      );
+    }
+
+    //here we commit transaction
+    await connection.commit();
+
+    //here we delete old image after successful commit
+    if (student_photo && oldPhotos?.student_photo) {
+      fs.unlink(oldPhotos.student_photo, () => {});
+    }
+    if (aadhar_card && oldPhotos?.aadhar_card) {
+      fs.unlink(oldPhotos.aadhar_card, () => {});
+    }
+    if (father_photo && oldPhotos?.father_photo) {
+      fs.unlink(oldPhotos.father_photo, () => {});
+    }
+    if (mother_photo && oldPhotos?.mother_photo) {
+      fs.unlink(oldPhotos.mother_photo, () => {});
+    }
+
+    return { student_id };
+
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateTeacherService(teacher_id, data, school_id) {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      // user fields
+      name,
+      user_email,
+      password,
+
+      // teacher fields
+      qualification,
+      experience_years,
+      joining_date,
+
+      // photos
+      teacher_photo,
+      aadhar_card
+    } = data;
+
+    //here we get old image
+    const oldPhotos = await schoolAdminModel.getTeacherPhotosById(
+      teacher_id,
+      school_id,
+      connection
+    );
+
+  //here we update user
+    const userUpdateData = {};
+    if (name) userUpdateData.name = name;
+    if (user_email) userUpdateData.email = user_email;
+    if (password) {
+      userUpdateData.password = await bcrypt.hash(password, 10);
+    }
+
+    if (Object.keys(userUpdateData).length > 0) {
+      await schoolAdminModel.updateUserByTeacherId(
+        teacher_id,
+        school_id,
+        userUpdateData,
+        connection
+      );
+    }
+
+      //here we update teacher
+    const teacherUpdateData = {};
+    if (qualification) teacherUpdateData.qualification = qualification;
+    if (experience_years !== undefined)
+      teacherUpdateData.experience_years = experience_years;
+    if (joining_date) teacherUpdateData.joining_date = joining_date;
+    if (teacher_photo) teacherUpdateData.teacher_photo = teacher_photo;
+    if (aadhar_card) teacherUpdateData.aadhar_card = aadhar_card;
+
+    if (Object.keys(teacherUpdateData).length > 0) {
+      await schoolAdminModel.updateTeacherById(
+        teacher_id,
+        school_id,
+        teacherUpdateData,
+        connection
+      );
+    }
+
+    //here we commit
+    await connection.commit();
+    
+    //here we deleted old image after commit
+    if (teacher_photo && oldPhotos?.teacher_photo) {
+      fs.unlink(oldPhotos.teacher_photo, () => {});
+    }
+    if (aadhar_card && oldPhotos?.aadhar_card) {
+      fs.unlink(oldPhotos.aadhar_card, () => {});
+    }
+
+    return { teacher_id };
+
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateAccountantService(accountant_id, data, school_id) {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      // user fields
+      name,
+      user_email,
+      password,
+
+      // accountant fields
+      qualification,
+
+      // photos
+      accountant_photo,
+      aadhar_card
+    } = data;
+
+   //here we get old image
+    const oldPhotos = await schoolAdminModel.getAccountantPhotosById(
+      accountant_id,
+      school_id,
+      connection
+    );
+
+   //here we update user
+    const userUpdateData = {};
+    if (name) userUpdateData.name = name;
+    if (user_email) userUpdateData.email = user_email;
+    if (password) {
+      userUpdateData.password = await bcrypt.hash(password, 10);
+    }
+
+    if (Object.keys(userUpdateData).length > 0) {
+      await schoolAdminModel.updateUserByAccountantId(
+        accountant_id,
+        school_id,
+        userUpdateData,
+        connection
+      );
+    }
+    
+    //here we update accountant
+    const accountantUpdateData = {};
+    if (qualification) accountantUpdateData.qualification = qualification;
+    if (accountant_photo)
+      accountantUpdateData.accountant_photo = accountant_photo;
+    if (aadhar_card) accountantUpdateData.aadhar_card = aadhar_card;
+
+    if (Object.keys(accountantUpdateData).length > 0) {
+      await schoolAdminModel.updateAccountantById(
+        accountant_id,
+        school_id,
+        accountantUpdateData,
+        connection
+      );
+    }
+
+    //here we commit 
+    await connection.commit();
+
+    //here we delete old image after commit
+    if (accountant_photo && oldPhotos?.accountant_photo) {
+      fs.unlink(oldPhotos.accountant_photo, () => {});
+    }
+    if (aadhar_card && oldPhotos?.aadhar_card) {
+      fs.unlink(oldPhotos.aadhar_card, () => {});
+    }
+
+    return { accountant_id };
+
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteStudentService(student_id, school_id) {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    await schoolAdminModel.softDeleteStudent(
+      student_id,
+      school_id,
+      connection
+    );
+
+    await schoolAdminModel.softDeleteUserByStudentId(
+      student_id,
+      school_id,
+      connection
+    );
+
+    await connection.commit();
+    return true;
+
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteTeacherService(teacher_id, school_id) {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    await schoolAdminModel.softDeleteTeacher(
+      teacher_id,
+      school_id,
+      connection
+    );
+
+    await schoolAdminModel.softDeleteUserByTeacherId(
+      teacher_id,
+      school_id,
+      connection
+    );
+
+    await connection.commit();
+    return true;
+
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteAccountantService(accountant_id, school_id) {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    await schoolAdminModel.softDeleteAccountant(
+      accountant_id,
+      school_id,
+      connection
+    );
+
+    await schoolAdminModel.softDeleteUserByAccountantId(
+      accountant_id,
+      school_id,
+      connection
+    );
+
+    await connection.commit();
+    return true;
+
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+  } finally {
+    connection.release();
+  }
+}
+
+
+
+
