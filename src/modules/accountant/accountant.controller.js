@@ -3,7 +3,7 @@ import * as accountantService from './accountant.service.js';
 export async function updateStudent(req, res) {
   try {
     const school_id = req.user.school_id;
-    const { student_id } = req.params;
+    const { student_id } = req.body;
 
     const photos = {};
     if (req.files) {
@@ -45,7 +45,7 @@ export async function updateStudent(req, res) {
 export async function updateTeacher(req, res) {
   try {
     const school_id = req.user.school_id;
-    const { teacher_id } = req.params;
+    const { teacher_id } = req.body;
 
     const photos = {};
     if (req.files) {
@@ -78,7 +78,7 @@ export async function updateTeacher(req, res) {
 export async function updateAccountant(req, res) {
   try {
     const school_id = req.user.school_id;
-    const { accountant_id } = req.params;
+    const { accountant_id } = req.body;
 
     const photos = {};
     if (req.files) {

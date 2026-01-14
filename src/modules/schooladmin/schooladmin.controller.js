@@ -854,6 +854,218 @@ export async function deleteFeeById(req, res) {
   }
 }
 
+export async function updateStudent(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { student_id } = req.body;
+    console.log(req.body)
+
+    if (!student_id) {
+      return res.status(400).json({
+        success: false,
+        message: "student_id is required"
+      });
+    }
+
+    const photos = {};
+    if (req.files) {
+      if (req.files.student_photo)
+        photos.student_photo = req.files.student_photo[0].path;
+
+      if (req.files.aadhar_card)
+        photos.aadhar_card = req.files.aadhar_card[0].path;
+
+      if (req.files.father_photo)
+        photos.father_photo = req.files.father_photo[0].path;
+
+      if (req.files.mother_photo)
+        photos.mother_photo = req.files.mother_photo[0].path;
+    }
+
+    const result = await schoolAdminService.updateStudentService({
+      ...req.body,
+      ...photos,
+      school_id
+    });
+
+    return res.json({
+      success: true,
+      message: "Student updated successfully",
+      data: result
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+export async function updateTeacher(req, res) {
+  try {
+    const school_id = req.user.school_id;
+      const { teacher_id } = req.body;
+
+    if (!teacher_id) {
+      return res.status(400).json({
+        success: false,
+        message: "teacher_id is required"
+      });
+    }
+
+    const photos = {};
+    if (req.files) {
+      if (req.files.teacher_photo)
+        photos.teacher_photo = req.files.teacher_photo[0].path;
+
+      if (req.files.aadhar_card)
+        photos.aadhar_card = req.files.aadhar_card[0].path;
+    }
+
+    const result = await schoolAdminService.updateTeacherService(
+      teacher_id,
+      { ...req.body, ...photos },
+      school_id
+    );
+
+    return res.json({
+      success: true,
+      message: "Teacher updated successfully",
+      data: result
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+export async function updateAccountant(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const {accountant_id} = req.body
+
+    if (!accountant_id) {
+      return res.status(400).json({
+        success: false,
+        message: "accountant_id is required"
+      });
+    }
+
+    const photos = {};
+    if (req.files) {
+      if (req.files.accountant_photo)
+        photos.accountant_photo = req.files.accountant_photo[0].path;
+
+      if (req.files.aadhar_card)
+        photos.aadhar_card = req.files.aadhar_card[0].path;
+    }
+
+    const result = await schoolAdminService.updateAccountantService(
+      accountant_id,
+      { ...req.body, ...photos },
+      school_id
+    );
+
+    return res.json({
+      success: true,
+      message: "Accountant updated successfully",
+      data: result
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+export async function deleteStudentById(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { student_id } = req.body;
+
+    if (!student_id) {
+      return res.status(400).json({
+        success: false,
+        message: "student_id is required"
+      });
+    }
+
+    await schoolAdminService.deleteStudentService(student_id, school_id);
+
+    return res.json({
+      success: true,
+      message: "Student deleted successfully"
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+export async function deleteTeacherById(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { teacher_id } = req.body;
+
+    if (!teacher_id) {
+      return res.status(400).json({
+        success: false,
+        message: "teacher_id is required"
+      });
+    }
+
+    await schoolAdminService.deleteTeacherService(teacher_id, school_id);
+
+    return res.json({
+      success: true,
+      message: "Teacher deleted successfully"
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+export async function deleteAccountantById(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { accountant_id } = req.body;
+
+    if (!accountant_id) {
+      return res.status(400).json({
+        success: false,
+        message: "accountant_id is required"
+      });
+    }
+
+    await schoolAdminService.deleteAccountantService(accountant_id, school_id);
+
+    return res.json({
+      success: true,
+      message: "Accountant deleted successfully"
+    });
+
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
+
 
 
 

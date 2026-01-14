@@ -58,7 +58,6 @@ export async function updateStudent(student_id, data, school_id) {
   return result;
 }
 
-
 export async function updateTeacher(teacher_id, data, school_id) {
   const fields = [];
   const values = [];

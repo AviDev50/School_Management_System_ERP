@@ -32,7 +32,13 @@ import {
   createFee,
   getFees,
   updateFeeById,
-  deleteFeeById
+  deleteFeeById,
+  updateStudent,
+  updateTeacher,
+  updateAccountant,
+  deleteStudentById,
+  deleteTeacherById,
+  deleteAccountantById
 } from "./schooladmin.controller.js";
 import {
   authMiddleware,
@@ -254,6 +260,54 @@ router.delete(
   authMiddleware,
   checkPermission('manage_fees'),
   deleteFeeById
+);
+
+router.put(
+  "/updateStudent",
+  authMiddleware,
+  checkPermission("edit_student"),
+  studentUpload,
+  updateStudent
+);
+
+router.put(
+  "/updateTeacher",
+  authMiddleware,
+  checkPermission("edit_teacher"),
+  teacherUpload,
+  updateTeacher
+);
+
+router.put(
+  "/updateAccountant",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  updateAccountant
+);
+
+router.delete(
+  "/deleteStudentById",
+  authMiddleware,
+  checkPermission("edit_student"),
+  accountantUpload,
+  deleteStudentById
+);
+
+router.delete(
+  "/deleteTeacherById",
+  authMiddleware,
+  checkPermission("edit_teacher"),
+  accountantUpload,
+  deleteTeacherById
+);
+
+router.delete(
+  "/deleteAccountantById",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  deleteAccountantById
 );
 
 
