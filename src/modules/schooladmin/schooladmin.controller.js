@@ -1065,6 +1065,111 @@ export async function deleteAccountantById(req, res) {
   }
 }
 
+export async function createNotice(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    const result = await schoolAdminService.createNoticeService(
+      school_id,
+      req.body
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Notice created successfully",
+      data: result,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+
+export async function getNotices(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    const data = await schoolAdminService.getNoticesService(school_id);
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+export async function getNoticeById(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { notice_id } = req.params;
+
+    const data = await schoolAdminService.getNoticeByIdService(
+      notice_id,
+      school_id
+    );
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+export async function updateNotice(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { notice_id } = req.body;
+
+    await schoolAdminService.updateNoticeService(
+      notice_id,
+      school_id,
+      req.body
+    );
+
+    res.json({
+      success: true,
+      message: "Notice updated successfully",
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+export async function deleteNotice(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { notice_id } = req.body;
+
+    await schoolAdminService.deleteNoticeService(notice_id, school_id);
+
+    res.json({
+      success: true,
+      message: "Notice deleted successfully",
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
 
 
 

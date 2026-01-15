@@ -38,7 +38,12 @@ import {
   updateAccountant,
   deleteStudentById,
   deleteTeacherById,
-  deleteAccountantById
+  deleteAccountantById,
+  createNotice,
+  getNotices,
+  getNoticeById,
+  updateNotice,
+  deleteNotice
 } from "./schooladmin.controller.js";
 import {
   authMiddleware,
@@ -121,6 +126,7 @@ router.get(
   checkPermission('manage_classes'),
   getAllClasses
 );
+
 router.delete(
   "/deleteClass",
   authMiddleware,
@@ -309,6 +315,47 @@ router.delete(
   accountantUpload,
   deleteAccountantById
 );
+
+router.post(
+  "/createNotice",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  createNotice
+);
+
+router.get(
+  "/getNotices",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  getNotices
+);
+
+router.get(
+  "/getNoticeById",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  getNoticeById
+);
+
+router.put(
+  "/updateNotice",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  updateNotice
+);
+
+router.delete(
+  "/deleteNotice",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  deleteNotice
+);
+
 
 
 
