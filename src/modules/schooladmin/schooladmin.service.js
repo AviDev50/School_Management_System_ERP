@@ -40,8 +40,11 @@ export async function registerTeacherService(data) {
       name,
       user_email,
       password,
-     // gender,
       qualification,
+      father_name,
+      mother_name,
+      mobile_number,
+      address,
       teacher_photo,
       aadhar_card
     } = data;
@@ -61,8 +64,11 @@ export async function registerTeacherService(data) {
       {
         school_id,
         user_id,
-       // gender,
         qualification,
+        father_name,
+        mother_name,
+        mobile_number,
+        address,
         teacher_photo,
         aadhar_card
       },
@@ -87,14 +93,19 @@ export async function registerStudentService(data) {
     await connection.beginTransaction();
 
     const {
-      school_id,
       name,
       user_email,
       password,
+      school_id,
+      section_id,
+      class_id,
       admission_no,
       gender,
-      class_id,
-      section_id,
+      dob,
+      mobile_number,
+      father_name,
+      mother_name,
+      address,
       student_photo,
       aadhar_card,
       father_photo,
@@ -114,16 +125,21 @@ export async function registerStudentService(data) {
 
     await schoolAdminModel.createStudent(
       {
-        school_id,
-        user_id,
-        admission_no,
-        gender,
-        class_id,
-        section_id,
-        student_photo,
-        aadhar_card,
-        father_photo,
-        mother_photo
+      school_id,
+      user_id,
+      section_id,
+      class_id,
+      admission_no,
+      gender,
+      dob,
+      mobile_number,
+      father_name,
+      mother_name,
+      address,
+      student_photo,
+      aadhar_card,
+      father_photo,
+      mother_photo
       },
       connection
     );
@@ -146,16 +162,21 @@ export async function registerAccountantService(data) {
     await connection.beginTransaction();
 
     const {
-      school_id,
       name,
       user_email,
       password,
+      school_id,
       qualification,
+      mobile_number,
+      experience_years,
+      address,
+      father_name,
+      mother_name,
       accountant_photo,
       aadhar_card
     } = data;
 
-    const user_id = await registerUser(
+    const user_id = await registerUserService(
       {
         name,
         user_email,
@@ -168,11 +189,16 @@ export async function registerAccountantService(data) {
 
     await schoolAdminModel.createAccountant(
       {
-        school_id,
-        user_id,
-        qualification,
-        accountant_photo,
-        aadhar_card
+      school_id,
+      user_id,
+      qualification,
+      mobile_number,
+      experience_years,
+      address,
+      father_name,
+      mother_name,
+      accountant_photo,
+      aadhar_card
       },
       connection
     );
@@ -708,7 +734,7 @@ export async function updateStudentService(data) {
     //here we update user
     const userUpdateData = {};
     if (name) userUpdateData.name = name;
-    if (user_email) userUpdateData.email = user_email;
+    if (user_email) userUpdateData.user_email = user_email;
     if (password) {
       userUpdateData.password = await bcrypt.hash(password, 10);
     }
@@ -1024,6 +1050,91 @@ export async function deleteAccountantService(accountant_id, school_id) {
   } finally {
     connection.release();
   }
+}
+
+export async function createNoticeService(school_id, data) {
+  const { title, message} = data;
+
+  if (!school_id) {
+    throw new Error("School ID is required");
+  }
+
+  if (!title || title.trim() === "") {
+    throw new Error("Title is required");
+  }
+
+  if (!message || message.trim() === "") {
+    throw new Error("Message is required");
+  }
+
+  const result = await schoolAdminModel.createNotice({
+    school_id,
+    title: title.trim(),
+    message: message.trim()
+  });
+
+  return {
+    notice_id: result.insertId,
+  };
+}
+
+
+export async function getNoticesService(school_id) {
+  if (!school_id) throw new Error("School ID is required");
+  return await schoolAdminModel.getNoticesBySchool({ school_id });
+}
+
+export async function getNoticeByIdService(notice_id, school_id) {
+  if (!notice_id) throw new Error("Notice ID is required");
+
+  const notice = await schoolAdminModel.getNoticeById({ notice_id, school_id });
+  if (!notice) throw new Error("Notice not found");
+
+  return notice;
+}
+
+export async function updateNoticeService(notice_id, school_id, data) {
+  if (!notice_id) throw new Error("Notice ID is required");
+
+  const allowedFields = ["title", "message", "visible_to"];
+  const fields = [];
+  const values = [];
+
+  for (const key of allowedFields) {
+    if (data[key]) {
+      fields.push(`${key} = ?`);
+      values.push(data[key]);
+    }
+  }
+
+  if (fields.length === 0) {
+    throw new Error("No valid fields to update");
+  }
+
+  const result = await schoolAdminModel.updateNotice({
+    notice_id,
+    school_id,
+    fields,
+    values,
+  });
+
+  if (result.affectedRows === 0) {
+    throw new Error("Notice not found or unauthorized");
+  }
+
+  return true;
+}
+
+export async function deleteNoticeService(notice_id, school_id) {
+  if (!notice_id) throw new Error("Notice ID is required");
+
+  const result = await schoolAdminModel.deleteNotice({ notice_id, school_id });
+
+  if (result.affectedRows === 0) {
+    throw new Error("Notice not found or unauthorized");
+  }
+
+  return true;
 }
 
 

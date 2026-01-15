@@ -1,6 +1,8 @@
 import db from "../config/db.js";
 
 const permissionCache = new Map();
+//it is js in memory key value data structure
+//new Map() = fast temporary memory store (cache)
 
 export const checkPermission = (permissionKey) => {
   return async (req, res, next) => {

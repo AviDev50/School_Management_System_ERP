@@ -31,16 +31,21 @@ export async function insertUser(data, connection) {
 export async function createStudent(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO students
-     (school_id, user_id, admission_no, gender, class_id, section_id,
-      student_photo, aadhar_card, father_photo, mother_photo)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (school_id,user_id,section_id,class_id,admission_no,gender,
+      dob,mobile_number,father_name,mother_name,address,student_photo,aadhar_card,father_photo,mother_photo)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.school_id,
       data.user_id,
+      data.section_id,
+      data.class_id,
       data.admission_no,
       data.gender,
-      data.class_id,
-      data.section_id,
+      data.dob,
+      data.mobile_number,
+      data.father_name,
+      data.mother_name,
+      data.address,
       data.student_photo,
       data.aadhar_card,
       data.father_photo,
@@ -51,17 +56,21 @@ export async function createStudent(data, connection) {
   return result.insertId;
 }
 
-
 export async function createTeacher(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO teachers
-     (school_id, user_id,qualification, teacher_photo, aadhar_card)
-     VALUES (?, ?, ?, ?, ?)`,
+     (school_id,user_id,qualification,father_name,mother_name,mobile_number,address,experience_years,teacher_photo,aadhar_card)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.school_id,
       data.user_id,
-    //  data.gender,
       data.qualification,
+      data.father_name,
+      data.mother_name,
+      data.mobile_number,
+      data.address,
+      data.experience_years,
+      data.joining_date,
       data.teacher_photo,
       data.aadhar_card
     ]
@@ -73,12 +82,17 @@ export async function createTeacher(data, connection) {
 export async function createAccountant(data, connection) {
   const [result] = await connection.query(
     `INSERT INTO accountants
-     (school_id, user_id, qualification, accountant_photo, aadhar_card)
-     VALUES (?, ?, ?, ?, ?)`,
+     (school_id,user_id,qualification,father_name,mother_name,mobile_number,experience_years,address,accountant_photo,aadhar_card)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       data.school_id,
       data.user_id,
       data.qualification,
+      data.father_name,
+      data.mother_name,
+      data.mobile_number,
+      data.experience_years,
+      data.address,
       data.accountant_photo,
       data.aadhar_card
     ]
@@ -149,7 +163,6 @@ export async function getTotalStudentsCount(school_id) {
     connection.release();
   }
 }
-
 
 export async function getTeachersList({ school_id, limit, offset }) {
   const connection = await db.getConnection();
@@ -1056,5 +1069,64 @@ export async function softDeleteUserByAccountantId(
      WHERE a.accountant_id = ? AND a.school_id = ?`,
     [accountant_id, school_id]
   );
+}
+
+export async function getNoticesBySchool({ school_id }) {
+  const sql = `
+    SELECT notice_id, title, message, created_at
+    FROM notices
+    WHERE school_id = ?
+    ORDER BY notice_id DESC
+  `;
+  const [rows] = await db.execute(sql, [school_id]);
+  return rows;
+}
+
+export async function getNoticeById({ notice_id, school_id }) {
+  const sql = `
+    SELECT notice_id, title, message, created_at
+    FROM notices
+    WHERE notice_id = ? AND school_id = ?
+  `;
+  const [rows] = await db.execute(sql, [notice_id, school_id]);
+  return rows[0];
+}
+
+export async function updateNotice({ notice_id, school_id, fields, values }) {
+  const sql = `
+    UPDATE notices
+    SET ${fields.join(", ")}
+    WHERE notice_id = ? AND school_id = ?
+  `;
+  const [result] = await db.execute(sql, [...values, notice_id, school_id]);
+  return result;
+}
+
+export async function deleteNotice({ notice_id, school_id }) {
+  const sql = `
+    DELETE FROM notices
+    WHERE notice_id = ? AND school_id = ?
+  `;
+  const [result] = await db.execute(sql, [notice_id, school_id]);
+  return result;
+}
+
+export async function createNotice({
+  school_id,
+  title,
+  message
+}) {
+  const sql = `
+    INSERT INTO notices (school_id, title, message)
+    VALUES (?, ?, ?)
+  `;
+
+  const [result] = await db.execute(sql, [
+    school_id,
+    title,
+    message
+  ]);
+
+  return result;
 }
 
