@@ -22,10 +22,6 @@ import {
   getTimetable,
   updateTimetable,
   deleteTimetable,
-  createStudentAttendance,
-  updateStudentAttendance,
-  getStudentAttendance,
-  deleteStudentAttendance,
   getStudentById,
   getTeacherById,
   getAccountantById,
@@ -43,7 +39,15 @@ import {
   getNotices,
   getNoticeById,
   updateNotice,
-  deleteNotice
+  deleteNotice,
+  createStudentAttendance,
+  updateStudentAttendance,
+  getStudentAttendance,
+  deleteStudentAttendance,
+  createTeacherAttendance,
+  updateTeacherAttendance,
+  deleteTeacherAttendance,
+  getTeacherAttendance,
 } from "./schooladmin.controller.js";
 import {
   authMiddleware,
@@ -239,6 +243,14 @@ router.get(
   getStudentAttendance
 );
 
+router.delete(
+  "/deleteStudentAttendance",
+  authMiddleware,
+  checkPermission('manage_classes'),
+  deleteStudentAttendance
+);
+
+
 router.post(
   "/createFee",
   authMiddleware,
@@ -355,6 +367,72 @@ router.delete(
   accountantUpload,
   deleteNotice
 );
+
+router.post(
+  "/createStudentAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  createStudentAttendance
+);
+
+router.put(
+  "/updateStudentAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  updateStudentAttendance
+);
+
+router.get(
+  "/getStudentAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  getStudentAttendance
+);
+
+router.delete(
+  "/deleteStudentAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  deleteStudentAttendance
+);
+
+router.post(
+  "/createTeacherAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  createTeacherAttendance
+);
+
+router.put(
+  "/updateTeacherAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  updateTeacherAttendance
+);
+
+router.get(
+  "/getTeacherAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  getTeacherAttendance
+);
+
+router.delete(
+  "/deleteTeacherAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  deleteTeacherAttendance
+);
+
+
 
 
 

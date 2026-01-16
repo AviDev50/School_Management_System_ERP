@@ -524,62 +524,6 @@ export async function getTimetable(req, res) {
   }
 }
 
-export async function createStudentAttendance(req, res) {
-  try {
-    const school_id = req.user.school_id;
-    await schoolAdminService.createAttendanceService(req.body, school_id);
-    res.json({ message: "Attendance marked successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-export async function updateStudentAttendance(req, res) {
-  try {
-    const school_id = req.user.school_id;
-    const { attendance_id } = req.params;
-
-    await schoolAdminService.updateAttendanceService(
-      attendance_id,
-      req.body,
-      school_id
-    );
-
-    res.json({ message: "Attendance updated successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-export async function getStudentAttendance(req, res) {
-  try {
-    const school_id = req.user.school_id;
-    const data = await schoolAdminService.getAttendanceService(
-      req.query,
-      school_id
-    );
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
-export async function deleteStudentAttendance(req, res) {
-  try {
-    const school_id = req.user.school_id;
-    const { attendance_id } = req.body;
-
-    await schoolAdminService.deleteAttendanceService(
-      attendance_id,
-      school_id
-    );
-
-    res.json({ message: "Attendance deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
-
 export async function getStudentById(req, res) {
   try {
     const { student_id } = req.params;
@@ -1087,7 +1031,6 @@ export async function createNotice(req, res) {
   }
 }
 
-
 export async function getNotices(req, res) {
   try {
     const school_id = req.user.school_id;
@@ -1169,6 +1112,154 @@ export async function deleteNotice(req, res) {
     });
   }
 }
+
+export async function createStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const result = await schoolAdminService.createAttendanceService(
+      school_id,
+      req.body,
+      req.user.user_id
+    );
+
+    res.json({
+      success: true,
+      message: "Attendance marked successfully",
+      data: result
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function getStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const result = await schoolAdminService.getschoolAdminService(
+      school_id,
+      req.query
+    );
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function updateStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.body;
+
+    const result = await schoolAdminService.updateschoolAdminService(
+      attendance_id,
+      school_id,
+      req.body
+    );
+
+    res.json({
+      success: true,
+      message: "Attendance updated successfully"
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function deleteStudentAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.body;
+
+    await schoolAdminService.deleteschoolAdminService(attendance_id, school_id);
+
+    res.json({
+      success: true,
+      message: "Attendance deleted successfully"
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function createTeacherAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const user_id = req.user.user_id;
+
+    const result =
+      await schoolAdminService.createschoolAdminService(
+        school_id,
+        req.body,
+        user_id
+      );
+
+    res.json({
+      success: true,
+      message: "Teacher attendance marked successfully",
+      data: result
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function getTeacherAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    const result =
+      await schoolAdminService.getschoolAdminService(
+        school_id,
+        req.query
+      );
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function updateTeacherAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.params;
+
+    await schoolAdminService.updateschoolAdminService(
+      attendance_id,
+      school_id,
+      req.body
+    );
+
+    res.json({
+      success: true,
+      message: "Teacher attendance updated successfully"
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function deleteTeacherAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.params;
+
+    await schoolAdminService.deleteschoolAdminService(
+      attendance_id,
+      school_id
+    );
+
+    res.json({
+      success: true,
+      message: "Teacher attendance deleted successfully"
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+
 
 
 

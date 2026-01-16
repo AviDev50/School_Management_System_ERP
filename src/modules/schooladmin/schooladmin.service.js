@@ -457,30 +457,6 @@ export async function getTimetable(school_id, class_id, section_id) {
   });
 }
 
-
-export async function createAttendanceService(data, school_id) {
-  return schoolAdminModel.insertAttendance(data, school_id);
-}
-
-export async function updateAttendanceService(attendance_id, data, school_id) {
-  return schoolAdminModel.updateAttendance(
-    attendance_id,
-    data,
-    school_id
-  );
-}
-
-export async function getAttendanceService(query, school_id) {
-  return schoolAdminModel.getAttendance(query, school_id);
-}
-
-export async function deleteAttendanceService(attendance_id, school_id) {
-  return schoolAdminModel.deleteAttendance(
-    attendance_id,
-    school_id
-  );
-}
-
 export async function getStudentByIdService(student_id, school_id, req) {
 
   const result = await schoolAdminModel.getStudentById(
@@ -829,7 +805,7 @@ export async function updateTeacherService(teacher_id, data, school_id) {
   //here we update user
     const userUpdateData = {};
     if (name) userUpdateData.name = name;
-    if (user_email) userUpdateData.email = user_email;
+    if (user_email) userUpdateData.user_email = user_email;
     if (password) {
       userUpdateData.password = await bcrypt.hash(password, 10);
     }
@@ -913,7 +889,7 @@ export async function updateAccountantService(accountant_id, data, school_id) {
    //here we update user
     const userUpdateData = {};
     if (name) userUpdateData.name = name;
-    if (user_email) userUpdateData.email = user_email;
+    if (user_email) userUpdateData.user_email = user_email;
     if (password) {
       userUpdateData.password = await bcrypt.hash(password, 10);
     }
@@ -1137,6 +1113,158 @@ export async function deleteNoticeService(notice_id, school_id) {
   return true;
 }
 
+ //VALID_STATUS = ["P", "A", "L", "H", "OL"];
 
+export async function createAttendanceService(school_id, data, user_id) {
+  const {
+    student_id,
+    class_id,
+    section_id,
+    attendance_date,
+    status,
+    remarks
+  } = data;
+
+  if (!student_id || !class_id || !section_id || !attendance_date || !status) {
+    throw new Error("All required fields must be provided");
+  }
+
+  if (!VALID_STATUS.includes(status)) {
+    throw new Error("Invalid attendance status");
+  }
+
+  const existing = await schoolAdminModel.checkAttendanceExists(
+    student_id,
+    attendance_date
+  );
+
+  if (existing) {
+    throw new Error("Attendance already marked for this date");
+  }
+
+  return await schoolAdminModel.createAttendance({
+    school_id,
+    student_id,
+    class_id,
+    section_id,
+    attendance_date,
+    status,
+    remarks,
+    marked_by: user_id
+  });
+}
+
+export async function getAttendanceService(school_id, filters) {
+  return await schoolAdminModel.getAttendance(school_id, filters);
+}
+
+export async function updateAttendanceService(attendance_id, school_id, data) {
+  if (data.status && !VALID_STATUS.includes(data.status)) {
+    throw new Error("Invalid attendance status");
+  }
+
+  const updated = await schoolAdminModel.updateAttendance(
+    attendance_id,
+    school_id,
+    data
+  );
+
+  if (!updated) {
+    throw new Error("Attendance not found");
+  }
+
+  return updated;
+}
+
+export async function deleteAttendanceService(attendance_id, school_id) {
+  const deleted = await schoolAdminModel.deleteAttendance(
+    attendance_id,
+    school_id
+  );
+
+  if (!deleted) {
+    throw new Error("Attendance not found");
+  }
+}
+
+const VALID_STATUS = ["P", "A", "L", "H", "OL"];
+
+export async function createTeacherAttendanceService(
+  school_id,
+  data,
+  marked_by
+) {
+  const { teacher_id, attendance_date, status, remarks } = data;
+
+  if (!teacher_id || !attendance_date || !status) {
+    throw new Error("Required fields missing");
+  }
+
+  if (!VALID_STATUS.includes(status)) {
+    throw new Error("Invalid attendance status");
+  }
+
+  const exists =
+    await schoolAdminModel.checkTeacherAttendanceExists(
+      teacher_id,
+      attendance_date
+    );
+
+  if (exists) {
+    throw new Error("Attendance already marked for this date");
+  }
+
+  return await schoolAdminModel.createTeacherAttendance({
+    school_id,
+    teacher_id,
+    attendance_date,
+    status,
+    remarks,
+    marked_by
+  });
+}
+
+export async function getTeacherAttendanceService(school_id, filters) {
+  return await schoolAdminModel.getTeacherAttendance(
+    school_id,
+    filters
+  );
+}
+
+export async function updateTeacherAttendanceService(
+  attendance_id,
+  school_id,
+  data
+) {
+  if (data.status && !VALID_STATUS.includes(data.status)) {
+    throw new Error("Invalid attendance status");
+  }
+
+  const updated =
+    await schoolAdminModel.updateTeacherAttendance(
+      attendance_id,
+      school_id,
+      data
+    );
+
+  if (!updated) {
+    throw new Error("Attendance record not found");
+  }
+}
+
+export async function deleteTeacherAttendanceService(
+  attendance_id,
+  school_id
+) {
+  const deleted =
+    await schoolAdminModel.deleteTeacherAttendance(
+      attendance_id,
+      school_id
+    );
+
+  if (!deleted) {
+    throw new Error("Attendance record not found");
+  }
+}
 
 
