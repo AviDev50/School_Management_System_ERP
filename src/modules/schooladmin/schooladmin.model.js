@@ -268,13 +268,13 @@ export async function getTotalAccountantsCount(school_id) {
 export async function createClass(school_id, data) {
   const connection = await db.getConnection();
   try {
-    const { class_name, class_order, class_details, status } = data;
+    const { class_name, class_order, class_details} = data;
 
     const [result] = await connection.query(
       `INSERT INTO classes 
-       (school_id, class_name, class_order, class_details, status)
-       VALUES (?, ?, ?, ?, ?)`,
-      [school_id, class_name, class_order, class_details || null, status ?? 1]
+       (school_id, class_name, class_order, class_details)
+       VALUES (?, ?, ?, ?)`,
+      [school_id, class_name, class_order, class_details || null]
     );
 
     return { class_id: result.insertId };
@@ -565,63 +565,6 @@ export async function getTimetable({ school_id, class_id, section_id }) {
   } finally {
     connection.release();
   }
-}
-
-export async function insertAttendance(data, school_id) {
-  const sql = `
-    INSERT INTO student_attendance
-    (school_id, student_id, class_id, section_id, attendance_date, status, remarks)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
-  await db.query(sql, [
-    school_id,
-    data.student_id,
-    data.class_id,
-    data.section_id,
-    data.attendance_date,
-    data.status,
-    data.remarks || null
-  ]);
-}
-
-export async function updateAttendance(attendance_id, data, school_id) {
-  const sql = `
-    UPDATE student_attendance
-    SET status = ?, remarks = ?
-    WHERE attendance_id = ? AND school_id = ?
-  `;
-  await db.query(sql, [
-    data.status,
-    data.remarks || null,
-    attendance_id,
-    school_id
-  ]);
-}
-
-export async function getAttendance({ class_id, section_id, date }, school_id) {
-  const sql = `
-    SELECT *
-    FROM student_attendance
-    WHERE school_id = ?
-      AND class_id = ?
-      AND section_id = ?
-      AND attendance_date = ?
-  `;
-  const [rows] = await db.query(sql, [
-    school_id,
-    class_id,
-    section_id,
-    date
-  ]);
-  return rows;
-}
-
-export async function deleteAttendance(attendance_id, school_id) {
-  const sql = `
-    DELETE FROM student_attendance
-    WHERE attendance_id = ? AND school_id = ?
-  `;
-  await db.query(sql, [attendance_id, school_id]);
 }
 
 export async function getStudentById(student_id, school_id) {
@@ -1128,5 +1071,178 @@ export async function createNotice({
   ]);
 
   return result;
+}
+
+export async function checkAttendanceExists(student_id, attendance_date) {
+  const [rows] = await db.query(
+    `SELECT attendance_id FROM student_attendance
+     WHERE student_id = ? AND attendance_date = ?`,
+    [student_id, attendance_date]
+  );
+  return rows.length > 0;
+}
+
+export async function createAttendance(data) {
+  const [result] = await db.query(
+    `INSERT INTO student_attendance
+     (school_id, student_id, class_id, section_id, attendance_date, status, remarks, marked_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      data.school_id,
+      data.student_id,
+      data.class_id,
+      data.section_id,
+      data.attendance_date,
+      data.status,
+      data.remarks || null,
+      data.marked_by
+    ]
+  );
+
+  return { attendance_id: result.insertId };
+}
+
+export async function getAttendance(school_id, filters) {
+  let query = `
+    SELECT sa.*, s.admission_no, u.name AS student_name
+    FROM student_attendance sa
+    JOIN students s ON s.student_id = sa.student_id
+    JOIN users u ON u.user_id = s.user_id
+    WHERE sa.school_id = ?
+  `;
+  const params = [school_id];
+
+  if (filters.class_id) {
+    query += " AND sa.class_id = ?";
+    params.push(filters.class_id);
+  }
+
+  if (filters.section_id) {
+    query += " AND sa.section_id = ?";
+    params.push(filters.section_id);
+  }
+
+  if (filters.attendance_date) {
+    query += " AND sa.attendance_date = ?";
+    params.push(filters.attendance_date);
+  }
+
+  query += " ORDER BY sa.attendance_date DESC";
+
+  const [rows] = await db.query(query, params);
+  return rows;
+}
+
+export async function updateAttendance(attendance_id, school_id, data) {
+  const [result] = await db.query(
+    `UPDATE student_attendance
+     SET status = ?, remarks = ?
+     WHERE attendance_id = ? AND school_id = ?`,
+    [
+      data.status,
+      data.remarks || null,
+      attendance_id,
+      school_id
+    ]
+  );
+
+  return result.affectedRows > 0;
+}
+
+export async function deleteAttendance(attendance_id, school_id) {
+  const [result] = await db.query(
+    `DELETE FROM student_attendance
+     WHERE attendance_id = ? AND school_id = ?`,
+    [attendance_id, school_id]
+  );
+
+  return result.affectedRows > 0;
+}
+
+export async function checkTeacherAttendanceExists(
+  teacher_id,
+  attendance_date
+) {
+  const [rows] = await db.query(
+    `SELECT attendance_id
+     FROM teacher_attendance
+     WHERE teacher_id = ? AND attendance_date = ?`,
+    [teacher_id, attendance_date]
+  );
+  return rows.length > 0;
+}
+
+export async function createTeacherAttendance(data) {
+  const [result] = await db.query(
+    `INSERT INTO teacher_attendance
+     (school_id, teacher_id, attendance_date, status, remarks, marked_by)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      data.school_id,
+      data.teacher_id,
+      data.attendance_date,
+      data.status,
+      data.remarks || null,
+      data.marked_by
+    ]
+  );
+
+  return { attendance_id: result.insertId };
+}
+
+export async function getTeacherAttendance(school_id, filters) {
+  let query = `
+    SELECT ta.*, u.name AS teacher_name
+    FROM teacher_attendance ta
+    JOIN teachers t ON t.teacher_id = ta.teacher_id
+    JOIN users u ON u.user_id = t.user_id
+    WHERE ta.school_id = ?
+  `;
+  const params = [school_id];
+
+  if (filters.teacher_id) {
+    query += " AND ta.teacher_id = ?";
+    params.push(filters.teacher_id);
+  }
+
+  if (filters.attendance_date) {
+    query += " AND ta.attendance_date = ?";
+    params.push(filters.attendance_date);
+  }
+
+  query += " ORDER BY ta.attendance_date DESC";
+
+  const [rows] = await db.query(query, params);
+  return rows;
+}
+
+export async function updateTeacherAttendance(
+  attendance_id,
+  school_id,
+  data
+) {
+  const [result] = await db.query(
+    `UPDATE teacher_attendance
+     SET status = ?, remarks = ?
+     WHERE attendance_id = ? AND school_id = ?`,
+    [
+      data.status,
+      data.remarks || null,
+      attendance_id,
+      school_id
+    ]
+  );
+
+  return result.affectedRows > 0;
+}
+
+export async function deleteTeacherAttendance(attendance_id, school_id) {
+  const [result] = await db.query(
+    `DELETE FROM teacher_attendance
+     WHERE attendance_id = ? AND school_id = ?`,
+    [attendance_id, school_id]
+  );
+
+  return result.affectedRows > 0;
 }
 
