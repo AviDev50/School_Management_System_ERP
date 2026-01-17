@@ -320,10 +320,10 @@ export async function getAllClasses(school_id) {
          class_name,
          class_order,
          class_details,
-         status,
-         created_at
+         status
        FROM classes
        WHERE school_id = ?
+       AND status = 1
        ORDER BY class_order ASC`,
       [school_id]
     );
@@ -371,13 +371,15 @@ export async function createSection(school_id, data) {
 export async function updateSection(section_id, school_id, data) {
   const connection = await db.getConnection();
   try {
-    const { section_name, status } = data;
+    const { class_id, section_name } = data;
 
     const [result] = await connection.query(
       `UPDATE sections
-       SET section_name = ?, status = ?
-       WHERE section_id = ? AND school_id = ?`,
-      [section_name, status, section_id, school_id]
+       SET section_name = ?,
+           class_id = ?
+       WHERE section_id = ?
+         AND school_id = ?`,
+      [section_name, class_id, section_id, school_id]
     );
 
     return result.affectedRows;
@@ -391,13 +393,18 @@ export async function getAllSections(school_id, class_id) {
   try {
     const [rows] = await connection.query(
       `SELECT 
-         section_id,
-         class_id,
-         section_name,
-         status
-       FROM sections
-       WHERE school_id = ? AND class_id = ?
-       ORDER BY section_name ASC`,
+         s.section_id,
+         s.class_id,
+         s.section_name,
+         c.class_name
+       FROM sections s
+       JOIN classes c 
+         ON c.class_id = s.class_id
+        AND c.school_id = s.school_id
+       WHERE s.school_id = ?
+         AND s.class_id = ?
+         AND s.status = 1
+       ORDER BY s.section_name ASC`,
       [school_id, class_id]
     );
 
@@ -1073,7 +1080,7 @@ export async function createNotice({
   return result;
 }
 
-export async function checkAttendanceExists(student_id, attendance_date) {
+export async function checkStudentAttendanceExists(student_id, attendance_date) {
   const [rows] = await db.query(
     `SELECT attendance_id FROM student_attendance
      WHERE student_id = ? AND attendance_date = ?`,
@@ -1246,3 +1253,101 @@ export async function deleteTeacherAttendance(attendance_id, school_id) {
   return result.affectedRows > 0;
 }
 
+export async function checkAccountantAttendanceExists(
+  accountant_id,
+  attendance_date
+) {
+  const [rows] = await db.query(
+    `SELECT attendance_id
+     FROM accountant_attendance
+     WHERE accountant_id = ? AND attendance_date = ?`,
+    [accountant_id, attendance_date]
+  );
+  return rows.length > 0;
+}
+
+export async function createAccountantAttendance(data) {
+  const [result] = await db.query(
+    `INSERT INTO accountant_attendance
+     (school_id, accountant_id, attendance_date, status, remarks, marked_by)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      data.school_id,
+      data.accountant_id,
+      data.attendance_date,
+      data.status,
+      data.remarks || null,
+      data.marked_by
+    ]
+  );
+
+  return { attendance_id: result.insertId };
+}
+
+export async function getAccountantAttendance(school_id, filters) {
+  let query = `
+    SELECT aa.*, u.name AS accountant_name
+    FROM accountant_attendance aa
+    JOIN accountants a ON a.accountant_id = aa.accountant_id
+    JOIN users u ON u.user_id = a.user_id
+    WHERE aa.school_id = ?
+  `;
+  const params = [school_id];
+
+  if (filters.accountant_id) {
+    query += " AND aa.accountant_id = ?";
+    params.push(filters.accountant_id);
+  }
+
+  if (filters.attendance_date) {
+    query += " AND aa.attendance_date = ?";
+    params.push(filters.attendance_date);
+  }
+
+  query += " ORDER BY aa.attendance_date DESC";
+
+  const [rows] = await db.query(query, params);
+  return rows;
+}
+
+export async function updateAccountantAttendance(
+  attendance_id,
+  school_id,
+  data
+) {
+  const [result] = await db.query(
+    `UPDATE accountant_attendance
+     SET status = ?, remarks = ?
+     WHERE attendance_id = ? AND school_id = ?`,
+    [
+      data.status,
+      data.remarks || null,
+      attendance_id,
+      school_id
+    ]
+  );
+
+  return result.affectedRows > 0;
+}
+
+export async function deleteAccountantAttendance(attendance_id, school_id) {
+  const [result] = await db.query(
+    `DELETE FROM accountant_attendance
+     WHERE attendance_id = ? AND school_id = ?`,
+    [attendance_id, school_id]
+  );
+
+  return result.affectedRows > 0;
+}
+
+export async function getAllClassListById(school_id) {
+  const [rows] = await db.query(
+    `SELECT class_id, class_name
+     FROM classes
+     WHERE school_id = ? AND status = 1
+     ORDER BY class_name ASC`,
+    [school_id]
+  );
+
+  return rows;
+}

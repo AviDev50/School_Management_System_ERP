@@ -406,9 +406,15 @@ export async function createSectionService(school_id, data) {
 }
 
 export async function updateSectionService(section_id, school_id, data) {
-  await schoolAdminModel.updateSection(section_id, school_id, data);
-  return true;
+  const affectedRows = await schoolAdminModel.updateSection(
+    section_id,
+    school_id,
+    data
+  );
+
+  return affectedRows > 0;
 }
+
 
 export async function getAllSectionsService(school_id, class_id) {
   return await schoolAdminModel.getAllSections(school_id, class_id);
@@ -1054,7 +1060,6 @@ export async function createNoticeService(school_id, data) {
   };
 }
 
-
 export async function getNoticesService(school_id) {
   if (!school_id) throw new Error("School ID is required");
   return await schoolAdminModel.getNoticesBySchool({ school_id });
@@ -1113,9 +1118,9 @@ export async function deleteNoticeService(notice_id, school_id) {
   return true;
 }
 
- //VALID_STATUS = ["P", "A", "L", "H", "OL"];
+ const VALID_STATUS = ["P", "A", "L", "H", "OL"];
 
-export async function createAttendanceService(school_id, data, user_id) {
+export async function createStudentAttendanceService(school_id, data, user_id) {
   const {
     student_id,
     class_id,
@@ -1133,7 +1138,7 @@ export async function createAttendanceService(school_id, data, user_id) {
     throw new Error("Invalid attendance status");
   }
 
-  const existing = await schoolAdminModel.checkAttendanceExists(
+  const existing = await schoolAdminModel.checkStudentAttendanceExists(
     student_id,
     attendance_date
   );
@@ -1154,11 +1159,11 @@ export async function createAttendanceService(school_id, data, user_id) {
   });
 }
 
-export async function getAttendanceService(school_id, filters) {
+export async function getStudentAttendanceService(school_id, filters) {
   return await schoolAdminModel.getAttendance(school_id, filters);
 }
 
-export async function updateAttendanceService(attendance_id, school_id, data) {
+export async function updateStudentAttendanceService(attendance_id, school_id, data) {
   if (data.status && !VALID_STATUS.includes(data.status)) {
     throw new Error("Invalid attendance status");
   }
@@ -1176,7 +1181,7 @@ export async function updateAttendanceService(attendance_id, school_id, data) {
   return updated;
 }
 
-export async function deleteAttendanceService(attendance_id, school_id) {
+export async function deleteStudentAttendanceService(attendance_id, school_id) {
   const deleted = await schoolAdminModel.deleteAttendance(
     attendance_id,
     school_id
@@ -1187,7 +1192,7 @@ export async function deleteAttendanceService(attendance_id, school_id) {
   }
 }
 
-const VALID_STATUS = ["P", "A", "L", "H", "OL"];
+//const VALID_STATUS = ["P", "A", "L", "H", "OL"];
 
 export async function createTeacherAttendanceService(
   school_id,
@@ -1267,4 +1272,91 @@ export async function deleteTeacherAttendanceService(
   }
 }
 
+export async function createAccountantAttendanceService(
+  school_id,
+  data,
+  marked_by
+) {
+  const { accountant_id, attendance_date, status, remarks } = data;
 
+  if (!accountant_id || !attendance_date || !status) {
+    throw new Error("Required fields missing");
+  }
+
+  if (!VALID_STATUS.includes(status)) {
+    throw new Error("Invalid attendance status");
+  }
+
+  const exists =
+    await schoolAdminModel.checkAccountantAttendanceExists(
+      accountant_id,
+      attendance_date
+    );
+
+  if (exists) {
+    throw new Error("Attendance already marked for this date");
+  }
+
+  return await schoolAdminModel.createAccountantAttendance({
+    school_id,
+    accountant_id,
+    attendance_date,
+    status,
+    remarks,
+    marked_by
+  });
+}
+
+export async function getAccountantAttendanceService(school_id, filters) {
+  return await schoolAdminModel.getAccountantAttendance(
+    school_id,
+    filters
+  );
+}
+
+export async function updateAccountantAttendanceService(
+  attendance_id,
+  school_id,
+  data
+) {
+  if (data.status && !VALID_STATUS.includes(data.status)) {
+    throw new Error("Invalid attendance status");
+  }
+
+  const updated =
+    await schoolAdminModel.updateAccountantAttendance(
+      attendance_id,
+      school_id,
+      data
+    );
+
+  if (!updated) {
+    throw new Error("Attendance record not found");
+  }
+}
+
+export async function deleteAccountantAttendanceService(
+  attendance_id,
+  school_id
+) {
+  const deleted =
+    await schoolAdminModel.deleteAccountantAttendance(
+      attendance_id,
+      school_id
+    );
+
+  if (!deleted) {
+    throw new Error("Attendance record not found");
+  }
+}
+
+export async function getAllClassListService(school_id) {
+  if (!school_id) {
+    throw new Error("school_id is required");
+  }
+
+  const rows =
+    await schoolAdminModel.getAllClassListById(school_id);
+
+  return rows;
+}
