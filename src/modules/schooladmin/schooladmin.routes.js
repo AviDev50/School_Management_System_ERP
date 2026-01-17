@@ -48,6 +48,11 @@ import {
   updateTeacherAttendance,
   deleteTeacherAttendance,
   getTeacherAttendance,
+  createAccountantAttendance,
+  updateAccountantAttendance,
+  getAccountantAttendance,
+  deleteAccountantAttendance,
+  getAllClassList,
 } from "./schooladmin.controller.js";
 import {
   authMiddleware,
@@ -145,6 +150,7 @@ router.post(
   createSection
 );
 
+//best way layered architecture
 router.put(
   "/updateSection",
   authMiddleware,
@@ -431,6 +437,47 @@ router.delete(
   accountantUpload,
   deleteTeacherAttendance
 );
+
+router.post(
+  "/createAccountantAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  createAccountantAttendance
+);
+
+router.put(
+  "/updateAccountantAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  updateAccountantAttendance
+);
+
+router.get(
+  "/getAccountantAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  getAccountantAttendance
+);
+
+router.delete(
+  "/deleteAccountantAttendance",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  deleteAccountantAttendance
+);
+
+router.get(
+  "/getAllClassList",
+  authMiddleware,
+  checkPermission("edit_accountants"),
+  accountantUpload,
+  getAllClassList
+);
+
 
 
 

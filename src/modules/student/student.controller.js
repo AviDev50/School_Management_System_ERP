@@ -9,6 +9,7 @@ export async function getStudentDetailsById(req, res) {
       message: "Student details get successfully",
       data: result
     });
+    
   } catch (error) {
     return res.status(400).json({
       success: false,

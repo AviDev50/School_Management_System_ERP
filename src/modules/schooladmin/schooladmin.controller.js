@@ -268,10 +268,28 @@ export async function createSection(req, res) {
 
 export async function updateSection(req, res) {
   try {
-    const { section_id } = req.params;
+    const { section_id, class_id, section_name } = req.body;
     const school_id = req.user.school_id;
 
-    await schoolAdminService.updateSectionService(section_id, school_id, req.body);
+    if (!section_id) {
+      return res.status(400).json({
+        success: false,
+        message: "section_id is required",
+      });
+    }
+
+    const updated = await schoolAdminService.updateSectionService(
+      section_id,
+      school_id,
+      { class_id, section_name }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Section not found or not updated",
+      });
+    }
 
     res.json({
       success: true,
@@ -1116,11 +1134,12 @@ export async function deleteNotice(req, res) {
 export async function createStudentAttendance(req, res) {
   try {
     const school_id = req.user.school_id;
-    const result = await schoolAdminService.createAttendanceService(
+    const result = await schoolAdminService.createStudentAttendanceService(
       school_id,
       req.body,
       req.user.user_id
     );
+    console.log(req)
 
     res.json({
       success: true,
@@ -1135,7 +1154,7 @@ export async function createStudentAttendance(req, res) {
 export async function getStudentAttendance(req, res) {
   try {
     const school_id = req.user.school_id;
-    const result = await schoolAdminService.getschoolAdminService(
+    const result = await schoolAdminService.getStudentAttendanceService(
       school_id,
       req.query
     );
@@ -1151,7 +1170,7 @@ export async function updateStudentAttendance(req, res) {
     const school_id = req.user.school_id;
     const { attendance_id } = req.body;
 
-    const result = await schoolAdminService.updateschoolAdminService(
+    const result = await schoolAdminService.updateStudentAttendanceService(
       attendance_id,
       school_id,
       req.body
@@ -1171,7 +1190,7 @@ export async function deleteStudentAttendance(req, res) {
     const school_id = req.user.school_id;
     const { attendance_id } = req.body;
 
-    await schoolAdminService.deleteschoolAdminService(attendance_id, school_id);
+    await schoolAdminService.deleteStudentAttendanceService(attendance_id, school_id);
 
     res.json({
       success: true,
@@ -1188,7 +1207,7 @@ export async function createTeacherAttendance(req, res) {
     const user_id = req.user.user_id;
 
     const result =
-      await schoolAdminService.createschoolAdminService(
+      await schoolAdminService.createTeacherAttendanceService(
         school_id,
         req.body,
         user_id
@@ -1209,7 +1228,7 @@ export async function getTeacherAttendance(req, res) {
     const school_id = req.user.school_id;
 
     const result =
-      await schoolAdminService.getschoolAdminService(
+      await schoolAdminService.getTeacherAttendanceService(
         school_id,
         req.query
       );
@@ -1225,7 +1244,7 @@ export async function updateTeacherAttendance(req, res) {
     const school_id = req.user.school_id;
     const { attendance_id } = req.params;
 
-    await schoolAdminService.updateschoolAdminService(
+    await schoolAdminService.updateTeacherAttendanceService(
       attendance_id,
       school_id,
       req.body
@@ -1245,7 +1264,7 @@ export async function deleteTeacherAttendance(req, res) {
     const school_id = req.user.school_id;
     const { attendance_id } = req.params;
 
-    await schoolAdminService.deleteschoolAdminService(
+    await schoolAdminService.deleteTeacherAttendanceService(
       attendance_id,
       school_id
     );
@@ -1259,8 +1278,101 @@ export async function deleteTeacherAttendance(req, res) {
   }
 }
 
+export async function createAccountantAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const marked_by = req.user.user_id;
 
+    const result =
+      await schoolAdminService.createAccountantAttendanceService(
+        school_id,
+        req.body,
+        marked_by
+      );
 
+    res.json({
+      success: true,
+      message: "Accountant attendance marked successfully",
+      data: result
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function getAccountantAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    const result =
+      await schoolAdminService.getAccountantAttendanceService(
+        school_id,
+        req.query
+      );
+
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function updateAccountantAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.params;
+
+    await schoolAdminService.updateAccountantAttendanceService(
+      attendance_id,
+      school_id,
+      req.body
+    );
+
+    res.json({
+      success: true,
+      message: "Accountant attendance updated successfully"
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function deleteAccountantAttendance(req, res) {
+  try {
+    const school_id = req.user.school_id;
+    const { attendance_id } = req.body;
+
+    await schoolAdminService.deleteAccountantAttendanceService(
+      attendance_id,
+      school_id
+    );
+
+    res.json({
+      success: true,
+      message: "Accountant attendance deleted successfully"
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+export async function getAllClassList(req, res) {
+  try {
+    const school_id = req.user.school_id;
+
+    const classes =
+      await schoolAdminService.getAllClassListService(school_id);
+
+    res.status(200).json({
+      success: true,
+      data: classes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
 
 
 
